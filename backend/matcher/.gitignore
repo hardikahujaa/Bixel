@@ -1,0 +1,5 @@
+# Downloaded ONNX model weights (~67 MB). Fetched by embedder.py on first use and
+# pinned here rather than the system temp dir, so a temp sweep cannot turn a cold
+# start into a fresh download. Never committed -- the Docker build fetches it at
+# build time, not on first request.
+.model_cache/
