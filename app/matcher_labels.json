@@ -1,0 +1,179 @@
+{
+  "_readme": "Hand-labeled set for tuning match_deeplinks' abstain threshold (Claude.md section 10, Day 1). Every step_text below is a real sentence (or a minimally trimmed clause of one) pulled from student_kit/siis_responses.json, cross-checked by hand against student_kit/deeplinks.json. acceptable_catalog_ids is a list because some catalog entries have near-duplicate 'view vs adjust' siblings describing the exact same underlying setting (verified by reading their qna_description, not just their id) -- matching either counts as correct. An empty list means the step legitimately has no catalog entry; several of those are deliberate lexical traps (real keyword overlap, no true semantic match) to test that the matcher abstains instead of firing on keyword overlap alone. See scripts/measure_matcher_precision.py.",
+  "labels": [
+    {
+      "row_id": "row_1",
+      "step_text": "Alternatively, go to Settings, tap Connections, and then tap Wi-Fi.",
+      "acceptable_catalog_ids": ["DL-0313"],
+      "note": "match: 'View WiFi Settings' (DL-0313, qna 'Controls Wi-Fi to connect to wireless networks...') is this action. NOT DL-0308/0309/0310 despite sharing message text 'View/Enable WiFi' -- their qna is a different feature (Wi-Fi scanning while off, for location accuracy), verified by reading qna_description, not the message label."
+    },
+    {
+      "row_id": "row_21",
+      "step_text": "To turn off this feature, navigate to Settings, tap Display, and then tap the switch next to Touch sensitivity to disable it.",
+      "acceptable_catalog_ids": ["DL-0125"],
+      "note": "clean match: Disable Touch sensitivity"
+    },
+    {
+      "row_id": "row_21",
+      "step_text": "you can try enabling the \"Touch sensitivity\" option. To do this, go to Settings, tap Display, and then tap the switch next to Touch sensitivity.",
+      "acceptable_catalog_ids": ["DL-0126"],
+      "note": "clean match: Enable Touch sensitivity"
+    },
+    {
+      "row_id": "row_7",
+      "step_text": "tap the switches next to Swipe for split screen",
+      "acceptable_catalog_ids": ["DL-0269", "DL-0270"],
+      "note": "clean match: Enable/Disable Swipe for split screen -- the source sentence just names the switch, not a direction, so both count"
+    },
+    {
+      "row_id": "row_8",
+      "step_text": "If your screen keeps turning off, change the screen timeout settings. From Settings, search for and select Screen timeout.",
+      "acceptable_catalog_ids": ["DL-0220", "DL-0471"],
+      "note": "DL-0220 'Adjust Timeout' and DL-0471 'Check Screen Timeout' are view/adjust siblings of the same setting ('how long the screen stays on'); found inside an otherwise off-topic screen-mirroring document"
+    },
+    {
+      "row_id": "row_1",
+      "step_text": "Navigate to Settings. Tap Apps. Select your email app. Tap Storage. Tap Clear cache.",
+      "acceptable_catalog_ids": [],
+      "note": "clear cache has zero catalog coverage"
+    },
+    {
+      "row_id": "row_1",
+      "step_text": "Touch and hold the Power off icon. Tap Safe mode when it appears on the screen.",
+      "acceptable_catalog_ids": [],
+      "note": "safe mode has zero catalog coverage"
+    },
+    {
+      "row_id": "row_2",
+      "step_text": "Press and hold both the Power button (or Side button) and the Volume down button simultaneously for at least 20 seconds.",
+      "acceptable_catalog_ids": [],
+      "note": "physical button combo (force restart), not a Settings screen"
+    },
+    {
+      "row_id": "row_2",
+      "step_text": "please connect your phone or tablet to its appropriate charger and let it charge for at least 1 hour.",
+      "acceptable_catalog_ids": [],
+      "note": "lexical trap: 'charge/charger' overlaps DL-0058/59/60/61 (charging feedback sound/vibration toggles), but this step is a physical action, not one of those settings"
+    },
+    {
+      "row_id": "row_3",
+      "step_text": "Go to Settings > Security and privacy > Screen lock and biometrics",
+      "acceptable_catalog_ids": [],
+      "note": "'security and privacy' screen has zero catalog coverage"
+    },
+    {
+      "row_id": "row_3",
+      "step_text": "use the 'Improve accuracy' feature in the Fingerprints menu to enhance accuracy by scanning the same finger 10 times",
+      "acceptable_catalog_ids": [],
+      "note": "lexical trap: overlaps DL-0551 'Fingerprint unlock', but that entry is the unlock-feature toggle, not this accuracy-improvement flow"
+    },
+    {
+      "row_id": "row_3",
+      "step_text": "You can also back up your device's data by connecting it to a monitor.",
+      "acceptable_catalog_ids": [],
+      "note": "lexical trap: strong keyword overlap with DL-0541/0542 (Samsung Cloud backup), but this step describes a USB/monitor workaround, not the cloud-backup setting"
+    },
+    {
+      "row_id": "row_5",
+      "step_text": "Swipe up on the Home screen to access the Apps screen. Tap the Search field, then enter and select Smart Switch to open the app.",
+      "acceptable_catalog_ids": [],
+      "note": "Smart Switch has zero catalog coverage"
+    },
+    {
+      "row_id": "row_5",
+      "step_text": "Wireless transfer: On the new device, tap Galaxy/Android, then tap Wireless transfer.",
+      "acceptable_catalog_ids": [],
+      "note": "Smart Switch flow, zero catalog coverage"
+    },
+    {
+      "row_id": "row_7",
+      "step_text": "Swipe for pop-up view",
+      "acceptable_catalog_ids": ["DL-0267", "DL-0268"],
+      "note": "correction: this DOES exist (DL-0267/0268) -- originally mislabeled as a negative on the wrong assumption that only split-screen swipe was covered; only found by re-checking a matcher false-positive against the catalog by hand. Trimmed to the exact phrase (not 'tap the switches next to Swipe for pop-up view') because the source sentence is 'tap the switches next to Swipe for split screen or Swipe for pop-up view' -- the chrome prefix only literally precedes the split-screen clause"
+    },
+    {
+      "row_id": "row_7",
+      "step_text": "Tap the minus icon next to the shortcuts you want to remove.",
+      "acceptable_catalog_ids": [],
+      "note": "removing one Edge panel shortcut has no catalog entry; only the whole-feature Enable/Disable Edge panels toggle exists (DL-0095/0096)"
+    },
+    {
+      "row_id": "row_8",
+      "step_text": "Open the Quick settings panel by swiping down from the top right of your screen. Tap Smart View.",
+      "acceptable_catalog_ids": [],
+      "note": "Smart View / screen mirroring has zero catalog coverage"
+    },
+    {
+      "row_id": "row_8",
+      "step_text": "From All Settings on your TV, navigate to All Settings, then Connections, and then External Device Manager.",
+      "acceptable_catalog_ids": [],
+      "note": "this is TV settings, not Galaxy phone/tablet Settings -- catalog is phone/tablet only"
+    },
+    {
+      "row_id": "row_9",
+      "step_text": "you can click your way through backing up your data with Smart Switch or other methods.",
+      "acceptable_catalog_ids": [],
+      "note": "Smart Switch, zero coverage"
+    },
+    {
+      "row_id": "row_9",
+      "step_text": "Note: To return to the Home screen, right-click using your mouse.",
+      "acceptable_catalog_ids": [],
+      "note": "accessory/mouse action, not a Settings screen"
+    },
+    {
+      "row_id": "row_10",
+      "step_text": "Disable Super steady mode.",
+      "acceptable_catalog_ids": [],
+      "note": "camera-app feature, zero catalog coverage"
+    },
+    {
+      "row_id": "row_10",
+      "step_text": "Increase the lighting in your scene.",
+      "acceptable_catalog_ids": [],
+      "note": "physical environment action, not a device setting"
+    },
+    {
+      "row_id": "row_14",
+      "step_text": "You can schedule a walk-in or mail-in repair to fix your cracked screen using Samsung genuine parts.",
+      "acceptable_catalog_ids": [],
+      "note": "service booking, not a device Settings screen"
+    },
+    {
+      "row_id": "row_20",
+      "step_text": "Locate the screen orientation icon. This icon may display as \"Auto rotate,\" \"Portrait,\" or \"Landscape.\"",
+      "acceptable_catalog_ids": [],
+      "note": "auto-rotate/orientation toggle has zero catalog coverage"
+    },
+    {
+      "row_id": "row_20",
+      "step_text": "Navigate to Settings, search for and select Factory data reset, and then tap Factory data reset again.",
+      "acceptable_catalog_ids": [],
+      "note": "hard negative: catalog's two 'Reset Options' entries (DL-0022, DL-0349) are about failed-unlock lockout and TalkBack verbosity, not factory reset -- lexical overlap on 'reset' only"
+    },
+    {
+      "row_id": "row_20",
+      "step_text": "Press and hold the Power button, then tap Restart.",
+      "acceptable_catalog_ids": [],
+      "note": "physical action, not a Settings screen"
+    },
+    {
+      "row_id": "row_21",
+      "step_text": "Navigate to and open Settings. Tap General management. Tap Reset. Tap Factory data reset.",
+      "acceptable_catalog_ids": [],
+      "note": "same factory-reset hard negative as row_20, different document -- should abstain consistently"
+    },
+    {
+      "row_id": "row_21",
+      "step_text": "Touch and hold Power off, then tap Safe mode.",
+      "acceptable_catalog_ids": [],
+      "note": "safe mode, zero coverage -- duplicate of the row_1 case in a different document"
+    },
+    {
+      "row_id": "row_21",
+      "step_text": "Go to Settings, tap Display, and then tap Navigation bar. Select Buttons to turn off full screen gestures.",
+      "acceptable_catalog_ids": ["DL-0169"],
+      "note": "borderline: 'View Navigation bar' (DL-0169, qna 'Customizes the navigation bar layout and button order...') is plausibly the right screen even though it doesn't describe this exact gesture-vs-button sub-toggle; DL-0294/0295 (cover-screen nav bar) and DL-0363/0364 (hide nav bar in screenshots) are wrong features and should NOT count"
+    }
+  ]
+}

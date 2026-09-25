@@ -12,6 +12,9 @@ secrets.json
 credentials.json
 service-account*.json
 
+# .env.example carries no secret, just documents which keys to set — keep it tracked.
+!.env.example
+
 # --- python ------------------------------------------------------------------
 __pycache__/
 *.py[cod]
@@ -43,6 +46,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+Claude.md
 
 # --- logs --------------------------------------------------------------------
 *.log
