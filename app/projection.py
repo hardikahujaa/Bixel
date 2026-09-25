@@ -1,4 +1,4 @@
-"""Catalog -> schema projection. Owner: M2 (Claude.md section 8).
+"""Catalog -> schema projection. Owner: M2 (docs/PLAN.md, "Who owns what").
 
 to_deeplink_pair(catalog_entry) -> (Deeplink, ValidationDeepLink | None)
 

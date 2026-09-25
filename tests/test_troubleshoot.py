@@ -1,5 +1,5 @@
 """Rigorous tests for POST /v1/troubleshoot against the actual grading
-contract (Claude.md sections 3/6), not just "it returns 200". These pass
+contract (docs/KIT_NOTES.md section 8), not just "it returns 200". These pass
 against today's hardcoded scaffold placeholder, and they're written to keep
 passing once the real extract() -> to_deeplink_pair() -> sanitize() ->
 validate() pipeline replaces it -- they encode the formatting rules
@@ -36,7 +36,7 @@ def test_returns_200_and_validates_against_the_graders_schema():
 
 
 def test_never_returns_empty_contexts():
-    """Banned by decision (Claude.md section 6.4): {"contexts": []} passes
+    """Banned by decision (docs/KIT_NOTES.md section 1): {"contexts": []} passes
     G4 and G5 but scores zero on generalization and signals a broken
     pipeline -- every path, including today's placeholder, must avoid it."""
     assert _post(VALID_PAYLOAD).json()["contexts"] != []
@@ -106,8 +106,8 @@ def test_every_step_group_has_non_empty_steps():
 
 
 def test_every_action_has_an_explicit_category():
-    """schema.py lets category default to 'manual' silently (Claude.md
-    section 4) -- assert it's actually present in the payload we send out,
+    """schema.py lets category default to 'manual' silently (docs/KIT_NOTES.md
+    section 1) -- assert it's actually present in the payload we send out,
     not relying on the default to paper over a dropped field."""
     for ctx in _post(VALID_PAYLOAD).json()["contexts"]:
         for action in ctx["actions"]:

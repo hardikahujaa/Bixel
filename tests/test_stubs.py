@@ -1,7 +1,7 @@
 """Contract tests for the not-yet-implemented functions (app/extractor.py,
 validator.py, sanitizer.py, projection.py, cache.py, variations.py).
 
-These lock in the seven agreed function shapes (Claude.md section 7) as
+These lock in the seven agreed function shapes (docs/PLAN.md, Day 1 interface list) as
 something executable: if a future change to a stub's parameter names or
 count breaks the call convention other modules already rely on, this fails
 immediately with a TypeError instead of surfacing as a confusing error deep

@@ -1,4 +1,4 @@
-"""Output sanitizer. Owner: M2 (Claude.md section 8).
+"""Output sanitizer. Owner: M2 (docs/PLAN.md, "Who owns what").
 
 sanitize(text) -> text
 

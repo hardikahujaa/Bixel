@@ -1,6 +1,6 @@
 # Fixtures
 
-Owner: M2 (Claude.md sections 7-8).
+Owner: M2 (docs/PLAN.md, "Who owns what" and Day 1).
 
 Three golden example responses go here, written during the Day 1 team call,
 before anyone else's real logic exists:
@@ -11,4 +11,4 @@ before anyone else's real logic exists:
 
 M2 writes these because M2 owns the validator, so the fixtures should
 exercise the rules the validator actually checks. Everyone else codes
-against these files until the real pipeline is wired (Claude.md Day 2).
+against these files until the real pipeline is wired (docs/PLAN.md, Day 2).

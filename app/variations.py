@@ -1,4 +1,4 @@
-"""Query paraphrases. Owner: M4 (Claude.md section 8).
+"""Query paraphrases. Owner: M4 (docs/PLAN.md, "Who owns what").
 
 variations(query) -> [str], 8 to 10 of them
 

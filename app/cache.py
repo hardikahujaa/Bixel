@@ -1,4 +1,4 @@
-"""Response cache. Owner: M2 (Claude.md section 8).
+"""Response cache. Owner: M2 (docs/PLAN.md, "Who owns what").
 
 Cache.get_or_compute(query, siis, fn) -> response
 

@@ -2,8 +2,26 @@ fastapi>=0.110
 uvicorn[standard]>=0.29
 pydantic>=2.6
 scikit-learn>=1.4
-fastembed==0.8.1
-onnxruntime==1.30.0
+
+# --- matcher embedding stack -------------------------------------------------
+# PINNED TO THE VERSIONS THAT WERE ACTUALLY VERIFIED, not to latest.
+# These two built backend/matcher/index/catalog_index.npz and produced the
+# measured gate (semantic>=0.77, grounding>=0.60 -> precision 1.000).
+#
+# Upgrading either line invalidates the committed index and the tuned threshold:
+# the safe plateau is only ~0.03 wide, so a small change in tokenisation or ONNX
+# numerics can move scores past it. Before bumping these, run
+#   python -m backend.matcher.build_index
+#   python -m backend.matcher.evaluate
+# and confirm test_embed_documents_matches_the_committed_index still passes.
+fastembed==0.8.0
+onnxruntime==1.28.0
+
+# Imported directly by backend/matcher/{embedder,build_index,matcher}.py.
+# It also arrives transitively via fastembed and scikit-learn, but a direct
+# import belongs in the dependency list rather than relying on that.
+numpy>=2.0
+
 python-dotenv>=1.0
 google-generativeai>=0.5
 httpx>=0.27

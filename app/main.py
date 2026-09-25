@@ -1,4 +1,4 @@
-"""FastAPI service entrypoint. Owner: M3 (Claude.md section 8).
+"""FastAPI service entrypoint. Owner: M3 (docs/PLAN.md, "Who owns what").
 
 Run from the repo root: python -m uvicorn app.main:app --reload
 """
@@ -30,7 +30,7 @@ def troubleshoot(request: TroubleshootRequest) -> ContextDeeplinkResponse:
     """Scaffold wiring only — ignores the request body and always returns the
     same placeholder. The real path (extract -> to_deeplink_pair per step ->
     sanitize -> validate, wrapped in the cache) lands once M1/M2 hand off
-    their functions (Claude.md Day 2, section 10)."""
+    their functions (docs/PLAN.md, Day 2)."""
     return _PLACEHOLDER_RESPONSE
 
 

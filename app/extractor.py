@@ -1,4 +1,4 @@
-"""LLM extraction pipeline. Owner: M1 (Claude.md section 8).
+"""LLM extraction pipeline. Owner: M1 (docs/PLAN.md, "Who owns what").
 
 extract(query, siis_response) -> ContextDeeplinkResponse
 

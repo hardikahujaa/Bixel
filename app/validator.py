@@ -1,8 +1,8 @@
-"""Response validator. Owner: M2 (Claude.md section 8).
+"""Response validator. Owner: M2 (docs/PLAN.md, "Who owns what").
 
 validate(response) -> {"ok": bool, "errors": [str]}
 
-Checks every formatting rule in Claude.md sections 3/6 that schema.py itself
+Checks every formatting rule in docs/KIT_NOTES.md section 8 ("The formatting rules, in one place") that schema.py itself
 does not enforce: goal regex + trailing period, title is 2-3 words, every
 action description is 5-7 words and starts with "It will", score in
 [0.0, 1.0], every steps list non-empty, category is present (not silently
