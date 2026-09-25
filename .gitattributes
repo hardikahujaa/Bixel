@@ -1,0 +1,7 @@
+# Normalise our own source to LF in the repo.
+* text=auto eol=lf
+
+# Samsung's kit files are the grader's own inputs. Keep them byte-identical to
+# what was shipped -- no line-ending conversion, despite core.autocrlf=true.
+# This line must stay AFTER the wildcard above; later patterns win.
+student_kit/** -text

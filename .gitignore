@@ -1,0 +1,50 @@
+# --- secrets -----------------------------------------------------------------
+# A bare `.env` rule does NOT match `.env.txt`, and `.env.txt` exists in this
+# project. Every shape below is deliberate. Never remove these lines.
+.env
+.env.*
+*.env
+.env.txt
+.env.local
+*.key
+*.pem
+secrets.json
+credentials.json
+service-account*.json
+
+# --- python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- node / frontend ---------------------------------------------------------
+node_modules/
+.next/
+dist/
+build/
+.vite/
+
+# --- build artefacts we regenerate (catalog embedding index, etc.) -----------
+*.faiss
+*.index
+*.npy
+.cache/
+
+# --- os / editor noise (OneDrive writes desktop.ini) -------------------------
+desktop.ini
+Thumbs.db
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# --- logs --------------------------------------------------------------------
+*.log
+
+# NOTE: results.jsonl is a graded deliverable. It is deliberately NOT ignored.
