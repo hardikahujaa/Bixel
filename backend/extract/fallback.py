@@ -164,13 +164,17 @@ def split_sections(content: str) -> list[tuple[str, list[str]]]:
 
 
 def _pick_steps(lines: list[str]) -> list[str]:
-    """Prefer imperative lines; fall back to the first prose lines.
+    """Prefer imperative lines; otherwise the first usable prose lines.
 
-    Either way the text is copied from the document, so the result is grounded.
+    Returns ``[]`` when a section has nothing usable, and the caller skips that section.
+    Emitting a generic placeholder here instead would put an *ungrounded* step into an
+    otherwise fully grounded response -- which the grounding check then correctly rejects,
+    and which would undermine the one property that makes the fallback safe on A4: every
+    step is copied from the document it was given.
     """
     imperative = [l for l in lines if _IMPERATIVE.match(l) and 8 <= len(l) <= 220]
     chosen = imperative or [l for l in lines if 8 <= len(l) <= 220]
-    return chosen[:MAX_STEPS_PER_GROUP] or ["Review the guidance for this device issue."]
+    return chosen[:MAX_STEPS_PER_GROUP]
 
 
 def build_fallback(query: str, siis_response: dict[str, Any]) -> dict[str, Any]:
@@ -184,6 +188,11 @@ def build_fallback(query: str, siis_response: dict[str, Any]) -> dict[str, Any]:
 
     actions: list[dict[str, Any]] = []
     for heading, lines in sections:
+        steps = _pick_steps(lines)
+        if not steps:
+            # Nothing in this section can be quoted. Skipping keeps every emitted step
+            # traceable to the document rather than padding with a generic line.
+            continue
         actions.append(
             {
                 "actionName": make_action_name(heading),
@@ -193,7 +202,7 @@ def build_fallback(query: str, siis_response: dict[str, Any]) -> dict[str, Any]:
                 "category": "manual",
                 "stepGroups": [
                     {
-                        "steps": _pick_steps(lines),
+                        "steps": steps,
                         "actionableDeeplink": None,
                         "validationDeeplink": None,
                     }

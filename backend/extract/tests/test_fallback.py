@@ -87,10 +87,10 @@ def test_every_step_is_copied_from_the_supplied_content(kit_rows):
             for action in goal["actions"]:
                 for group in action["stepGroups"]:
                     for step in group["steps"]:
-                        if step == "Review the guidance for this device issue.":
-                            continue  # documented last-resort filler
                         if step.startswith("Contact Samsung Support to arrange"):
-                            continue  # documented last-resort filler
+                            # The only ungrounded line the fallback can emit, and only
+                            # when the document yields nothing quotable at all.
+                            continue
                         assert " ".join(step.split()) in normalised_source, (
                             f"{row['id']}: step not found in source: {step[:70]!r}"
                         )

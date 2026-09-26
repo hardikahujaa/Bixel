@@ -5,12 +5,12 @@ parameter name or count breaks the call convention other modules already rely on
 fails immediately with a TypeError instead of surfacing as a confusing error deep in
 main.py's real pipeline later.
 
-Three of the seven are now implemented -- to_deeplink_pair, sanitize and validate -- so the
+Four of the seven are now implemented -- to_deeplink_pair, sanitize, validate and extract -- so the
 "still raises NotImplementedError" assertions for them have been replaced with assertions
 that they honour the agreed shape. Their behaviour is covered in depth by
 tests/test_projection.py, tests/test_sanitizer.py and tests/test_validator.py.
 
-Three remain stubs: extract (M1), variations (M4) and Cache.get_or_compute (M2). Those are
+Two remain stubs: variations (M4) and Cache.get_or_compute (M2). Those are
 expected to raise NotImplementedError -- that is the current, correct behaviour, not a bug.
 Each one's assertion below is what will fail, usefully, on the day it gets implemented.
 """
@@ -24,13 +24,33 @@ from app.validator import validate
 from app.variations import variations
 from student_kit.schema import Deeplink, ValidationDeepLink
 
+#: A minimal well-formed model answer, for the extract() shape test below.
+LLM_ANSWER = (
+    '{"goals": [{"name": "Blank Display", "title": "Blank display check", "score": 0.6,'
+    ' "actions": [{"actionName": "Force Restart", "description": "It will force the device restart",'
+    ' "category": "manual", "section": 1, "shortcut": null,'
+    ' "steps": ["Press and hold the Power button."]}]}]}'
+)
+
 
 # ------------------------------------------------------- still stubs, by design -----
 
 
-def test_extract_accepts_its_agreed_signature_and_is_not_implemented():
-    with pytest.raises(NotImplementedError):
-        extract(query="my screen is black", siis_response={"title": "t", "content": "c"})
+def test_extract_accepts_its_agreed_signature_and_returns_a_response():
+    """Implemented. Uses an injected fake client so this needs no key and no network."""
+    from backend.extract.client import FakeClient
+    from student_kit.schema import ContextDeeplinkResponse
+
+    result = extract(
+        query="my screen is black",
+        siis_response={
+            "title": "Blank display",
+            "content": "## Check\nPress and hold the Power button.",
+        },
+        client=FakeClient(LLM_ANSWER),
+    )
+    assert isinstance(result, ContextDeeplinkResponse)
+    assert result.contexts, "contexts is never empty -- banned project-wide"
 
 
 def test_variations_accepts_its_agreed_signature_and_is_not_implemented():
