@@ -5,12 +5,20 @@ actually runs against, and faking it here would only test the mock.
 
 The query pairs below are not arbitrary -- they are the exact strings measured
 against the real model while picking SIMILARITY_THRESHOLD (see app/cache.py's
-module docstring), so these assertions are checked against reality rather than
-against an assumption.
+module docstring and scripts/measure_cache_speed.py), so these assertions are
+checked against reality rather than against an assumption.
 """
-from app.cache import Cache
+import itertools
+import json
+from pathlib import Path
+
+import numpy as np
+
+from app.cache import SIMILARITY_THRESHOLD, Cache, _content_key
+from backend.matcher.embedder import embed_queries
 
 _SIIS = {"title": "Blank display", "content": "Press and hold the Power button."}
+_KIT_ROWS_PATH = Path(__file__).resolve().parent.parent / "student_kit" / "siis_responses.json"
 
 
 def test_repeat_query_is_a_cache_hit_and_computes_only_once():
@@ -59,27 +67,46 @@ def test_an_unrelated_query_against_the_same_content_is_a_miss():
 
 
 def test_two_distinct_kit_rows_sharing_a_document_are_not_conflated():
-    """The trap that moved the threshold from 0.72 to 0.90: row_2 and row_13
-    (student_kit/siis_responses.json) both route to the same "Blank or black
-    display" document and score 0.824 cosine against each other -- high, but
-    they are two different graded rows, not paraphrases of one query.
-    Conflating them is exactly what docs/KIT_NOTES.md section 5 warns
-    against: identical answers across distinct queries."""
+    """The trap that moved the threshold from 0.72 to 0.90 and then to 0.85:
+    row_2 and row_13's exact original_query strings (student_kit/
+    siis_responses.json) both route to the same "Blank or black display"
+    document and score 0.824 cosine against each other -- high, but they are
+    two different graded rows, not paraphrases of one query. Conflating them
+    is exactly what docs/KIT_NOTES.md section 5 warns against: identical
+    answers across distinct queries."""
     cache = Cache()
-    row_2 = (
-        "My Galaxy S22 screen turns completely blank or white and no text appears "
-        "when I search for a stock price or username on my device."
-    )
-    row_13 = (
-        "My Galaxy S22 screen stays blank and doesn't show any activation message "
-        "or anything else when I turn it on after a software update."
-    )
+    rows = {r["id"]: r for r in json.loads(_KIT_ROWS_PATH.read_text(encoding="utf-8"))["responses"]}
+    row_2 = rows["row_2"]["original_query"]
+    row_13 = rows["row_13"]["original_query"]
 
     cache.get_or_compute(row_2, _SIIS, lambda: "row_2 answer")
     result = cache.get_or_compute(row_13, _SIIS, lambda: "row_13 answer")
 
     assert result == "row_13 answer"
     assert cache.misses == 2
+
+
+def test_no_real_kit_rows_collide_at_the_shipped_threshold():
+    """Regression guard for the Day 3 finding (app/cache.py's module
+    docstring, scripts/measure_cache_speed.py): re-measures every pair of
+    distinct kit rows that share a document and fails loudly if any pair's
+    own queries now clear SIMILARITY_THRESHOLD against each other -- e.g.
+    after an embedding model change. If this ever fails, the fix is a higher
+    threshold or a second signal, not silencing the test."""
+    rows = json.loads(_KIT_ROWS_PATH.read_text(encoding="utf-8"))["responses"]
+    buckets: dict[str, list[dict]] = {}
+    for row in rows:
+        buckets.setdefault(_content_key(row["siis_response"]), []).append(row)
+
+    for bucket in buckets.values():
+        if len(bucket) < 2:
+            continue
+        vectors = embed_queries([row["original_query"] for row in bucket])
+        for (i, a), (j, b) in itertools.combinations(enumerate(bucket), 2):
+            score = float(np.dot(vectors[i], vectors[j]))
+            assert score < SIMILARITY_THRESHOLD, (
+                f"{a['id']} and {b['id']} collide at {score:.3f} >= {SIMILARITY_THRESHOLD}"
+            )
 
 
 def test_the_same_query_against_different_content_is_a_miss():

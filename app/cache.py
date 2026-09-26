@@ -13,34 +13,49 @@ of loading a second model -- that BGE session is already warmed once at
 process start for the matcher, and a cache miss pays for an LLM call anyway,
 so there is nothing to gain from a second, lighter embedder here.
 
-SIMILARITY_THRESHOLD is measured, not assumed, and was revised up once against
-real data that broke the first number picked. The first pass probed ten
-invented pairs and picked 0.72. Checking that against the actual kit
-(student_kit/siis_responses.json: 11 rows share a document with at least one
-other row, e.g. six all route to "Blank or black display on a Samsung phone
-or tablet") found real collisions up to 0.844 -- e.g. row_2 "screen turns
-completely blank or white" vs row_13 "screen stays blank" scored 0.824. Those
-are two of the kit's 20 *distinct* graded rows, not paraphrases of each
-other, and merging their answers is exactly what docs/KIT_NOTES.md section 5
-warns against: "the same document must yield different goals and titles
-depending on the query, or six of our twenty answers will be identical."
+SIMILARITY_THRESHOLD went through two revisions, each forced by checking the
+previous number against real data instead of trusting the invented pairs
+that picked it:
 
-    same document, different graded kit row (must MISS):  0.572-0.844
-    genuine paraphrases of one query, invented pairs:      0.663-0.785
-    near-identical rewording ("screen black" / "display black" etc.): 0.895-0.904
-    distinct topics entirely:                              0.469-0.608
+1. An invented ten-pair probe suggested 0.72. Checking that against the
+   actual kit (student_kit/siis_responses.json: 11 of the 20 rows share a
+   document with at least one other row, e.g. six all route to "Blank or
+   black display on a Samsung phone or tablet") found real collisions
+   between DIFFERENT graded rows up to 0.844 -- e.g. row_2 and row_13 both
+   describe a blank S22 screen but are different complaints, and scored
+   0.824 against each other. Conflating two of the kit's 20 distinct graded
+   rows is exactly what docs/KIT_NOTES.md section 5 warns against: "the same
+   document must yield different goals and titles depending on the query, or
+   six of our twenty answers will be identical." That pushed the threshold up
+   to 0.90.
 
-0.90 sits above every real kit-row collision measured (max 0.844) and every
-invented distinct-topic pair, catching near-identical repeats and reworded
-duplicates reliably. It also means most of the invented "genuine paraphrase"
-pairs above (0.663-0.785) will currently MISS -- a known, honest gap, not
-a silent one: at this threshold the cache is proven safe against the real 20
-rows but not yet proven to hit on genuinely loose paraphrasing. Closing that
-gap needs either a second signal (the way the matcher combines semantic,
-lexical and grounding rather than trusting one score) or per-query intent
-normalisation, tuned against M4's real paraphrase set on Day 3
-(docs/PLAN.md Day 3) -- the same way the matcher's own threshold was tuned
-against its hand-labelled set rather than picked once and left alone.
+2. 0.90 was then checked against real paraphrase data -- variations() run
+   live against all 20 kit queries, fixtures/paraphrases.json, swept in
+   scripts/measure_cache_speed.py -- and found to only hit 47.5% of genuine
+   paraphrases (target: 80%, docs/PLAN.md Day 3). The sweep also showed
+   something the first probe's ten invented pairs never could: across the
+   *entire* 0.80-0.95 range, no real paraphrase's argmax ever lands on the
+   WRONG row in its bucket, even where two different rows' own queries sit
+   close together. Only the original-vs-original collision matters here, and
+   its measured maximum is 0.844 -- checked twice, once against this venv's
+   drifted fastembed/onnxruntime and once against the exact pins in
+   requirements.txt, both giving the same 0.844.
+
+    threshold  correct-paraphrase-rate  original-row collisions
+        0.800                   99.4%   3
+        0.840                   90.1%   1
+        0.845                   88.3%   0   <- lowest safe value measured
+        0.850                   86.4%   0   <- shipped
+        0.860                   80.9%   0
+        0.900                   47.5%   0
+
+0.85 is the shipped value: zero collisions in both dependency environments
+tested, 86.4% correct-paraphrase rate against the 80% target, and a small
+margin (0.006) above the measured 0.844 ceiling. tests/test_cache.py's
+test_no_real_kit_rows_collide_at_the_shipped_threshold re-checks that ceiling
+against the live kit data on every test run, so a future embedding-model or
+catalog change that moves it gets caught immediately rather than silently.
+Run `python -m scripts.measure_cache_speed` to reproduce or re-tune this.
 """
 from __future__ import annotations
 
@@ -51,7 +66,7 @@ import numpy as np
 
 from backend.matcher.embedder import cosine_scores, embed_queries
 
-SIMILARITY_THRESHOLD = 0.90
+SIMILARITY_THRESHOLD = 0.85
 
 
 def _content_key(siis: dict[str, Any]) -> str:
