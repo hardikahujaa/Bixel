@@ -1,0 +1,32 @@
+{
+  "contexts": [
+    {
+      "goal": "Follow these steps to perform this Safe Mode Troubleshooting.",
+      "title": "Safe mode check",
+      "score": 0.61,
+      "actions": [
+        {
+          "actionName": "Restart In Safe Mode",
+          "description": "It will start the device safely",
+          "category": "auto",
+          "stepGroups": [
+            {
+              "steps": [
+                "Press and hold the Power button.",
+                "Touch and hold Power off, then tap Safe mode."
+              ],
+              "actionableDeeplink": {
+                "deeplink": "bixby://dummy_positive",
+                "description": "It opens the Safe mode screen",
+                "message": "Open the Safe mode screen",
+                "classes": null,
+                "originalType": "placeholder"
+              },
+              "validationDeeplink": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

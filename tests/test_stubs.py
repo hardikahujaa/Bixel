@@ -1,12 +1,18 @@
-"""Contract tests for the not-yet-implemented functions (app/extractor.py,
-validator.py, sanitizer.py, projection.py, cache.py, variations.py).
+"""Contract tests for the agreed function shapes (docs/PLAN.md, Day 1 interface list).
 
-These lock in the seven agreed function shapes (docs/PLAN.md, Day 1 interface list) as
-something executable: if a future change to a stub's parameter names or
-count breaks the call convention other modules already rely on, this fails
-immediately with a TypeError instead of surfacing as a confusing error deep
-in main.py's real pipeline later. Each stub is expected to raise
-NotImplementedError -- that's the current, correct behavior, not a bug.
+These lock in the seven agreed signatures as something executable: if a future change to a
+parameter name or count breaks the call convention other modules already rely on, this
+fails immediately with a TypeError instead of surfacing as a confusing error deep in
+main.py's real pipeline later.
+
+Three of the seven are now implemented -- to_deeplink_pair, sanitize and validate -- so the
+"still raises NotImplementedError" assertions for them have been replaced with assertions
+that they honour the agreed shape. Their behaviour is covered in depth by
+tests/test_projection.py, tests/test_sanitizer.py and tests/test_validator.py.
+
+Three remain stubs: extract (M1), variations (M4) and Cache.get_or_compute (M2). Those are
+expected to raise NotImplementedError -- that is the current, correct behaviour, not a bug.
+Each one's assertion below is what will fail, usefully, on the day it gets implemented.
 """
 import pytest
 
@@ -16,26 +22,15 @@ from app.projection import to_deeplink_pair
 from app.sanitizer import sanitize
 from app.validator import validate
 from app.variations import variations
+from student_kit.schema import Deeplink, ValidationDeepLink
+
+
+# ------------------------------------------------------- still stubs, by design -----
 
 
 def test_extract_accepts_its_agreed_signature_and_is_not_implemented():
     with pytest.raises(NotImplementedError):
         extract(query="my screen is black", siis_response={"title": "t", "content": "c"})
-
-
-def test_to_deeplink_pair_accepts_its_agreed_signature_and_is_not_implemented():
-    with pytest.raises(NotImplementedError):
-        to_deeplink_pair({"id": "DL-0001", "deeplink": "bixby://masked/act/x"})
-
-
-def test_sanitize_accepts_its_agreed_signature_and_is_not_implemented():
-    with pytest.raises(NotImplementedError):
-        sanitize("some text possibly containing samsung.com")
-
-
-def test_validate_accepts_its_agreed_signature_and_is_not_implemented():
-    with pytest.raises(NotImplementedError):
-        validate({"contexts": []})
 
 
 def test_variations_accepts_its_agreed_signature_and_is_not_implemented():
@@ -55,11 +50,64 @@ def test_cache_starts_with_zero_hits_and_misses():
     assert cache.misses == 0
 
 
-def test_each_stub_is_independently_importable_without_side_effects():
-    """Guards against an accidental module-level call, network request, or
-    file read sneaking into a stub before there's any real logic to need
-    one -- importing must be free."""
+# ------------------------------------------------- implemented: shape still honoured -----
+
+
+def test_to_deeplink_pair_returns_the_agreed_pair():
+    """(Deeplink, ValidationDeepLink | None) -- callers unpack two values."""
+    entry = {
+        "id": "DL-TEST",
+        "deeplink": "bixby://masked/act/aa73a35e8d",
+        "description": "Opens the 24-hour time format settings page.",
+        "message": "Switch Time Format",
+        "originalType": "onClickURL",
+        "validation": {"deeplink": "bixby://masked/val/ef6814259a", "key": "Use 24-hour format"},
+    }
+    result = to_deeplink_pair(entry)
+    assert isinstance(result, tuple) and len(result) == 2
+    actionable, validation = result
+    assert isinstance(actionable, Deeplink)
+    assert isinstance(validation, ValidationDeepLink)
+
+    entry_without_validation = dict(entry, validation=None)
+    _, none_validation = to_deeplink_pair(entry_without_validation)
+    assert none_validation is None
+
+
+def test_sanitize_returns_a_string():
+    """sanitize(text) -> text. Same type in, same type out."""
+    result = sanitize("some text possibly containing samsung.com")
+    assert isinstance(result, str)
+    assert "samsung.com" not in result
+
+
+def test_validate_returns_the_agreed_dict():
+    """validate(response) -> {"ok": bool, "errors": [str]}."""
+    result = validate({"contexts": []})
+    assert isinstance(result, dict)
+    assert set(result) == {"ok", "errors"}
+    assert isinstance(result["ok"], bool)
+    assert isinstance(result["errors"], list)
+    assert all(isinstance(error, str) for error in result["errors"])
+    # empty contexts is banned, so this particular call must report not-ok
+    assert result["ok"] is False
+
+
+# ------------------------------------------------------------------- imports -----
+
+
+def test_each_module_is_independently_importable_without_side_effects():
+    """Guards against an accidental module-level call, network request, or file read
+    sneaking in. Importing must be free -- the catalog and embedding model are loaded
+    lazily, not at import time."""
     import importlib
 
-    for module_name in ["app.cache", "app.extractor", "app.projection", "app.sanitizer", "app.validator", "app.variations"]:
+    for module_name in [
+        "app.cache",
+        "app.extractor",
+        "app.projection",
+        "app.sanitizer",
+        "app.validator",
+        "app.variations",
+    ]:
         importlib.import_module(module_name)

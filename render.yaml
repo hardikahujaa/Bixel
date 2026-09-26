@@ -1,0 +1,17 @@
+# Render blueprint. `healthCheckPath` is /health because that is gate G2 -- if it does not
+# return {"status":"ok"} the whole automated score is zero, so the platform's own health
+# check and the grader's check are the same endpoint.
+#
+# GEMINI_API_KEY is marked sync:false so it is set in the dashboard and never committed.
+services:
+  - type: web
+    name: bixel
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PYTHONUNBUFFERED
+        value: "1"

@@ -1,0 +1,40 @@
+{
+  "contexts": [
+    {
+      "goal": "Follow these steps to perform this Factory Reset Troubleshooting.",
+      "title": "Factory data reset",
+      "score": 0.44,
+      "actions": [
+        {
+          "actionName": "Back Up Before Resetting",
+          "description": "It will protect your personal files",
+          "category": "manual",
+          "stepGroups": [
+            {
+              "steps": [
+                "Back up your data before continuing."
+              ],
+              "actionableDeeplink": null,
+              "validationDeeplink": null
+            }
+          ]
+        },
+        {
+          "actionName": "Perform Factory Data Reset",
+          "description": "It will erase all device data",
+          "category": "critical",
+          "stepGroups": [
+            {
+              "steps": [
+                "Open Settings and select General management.",
+                "Tap Reset, then Factory data reset."
+              ],
+              "actionableDeeplink": null,
+              "validationDeeplink": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

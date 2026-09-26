@@ -1,0 +1,66 @@
+{
+  "contexts": [
+    {
+      "goal": "Follow these steps to perform this Screen Damage Troubleshooting.",
+      "title": "Screen touch fix",
+      "score": 0.92,
+      "actions": [
+        {
+          "actionName": "Back Up Device Data",
+          "description": "It will back up your device data",
+          "category": "auto",
+          "stepGroups": [
+            {
+              "steps": [
+                "Navigate to and open Settings.",
+                "Tap Accounts and backup.",
+                "Select Back up data to protect your files."
+              ],
+              "actionableDeeplink": {
+                "deeplink": "bixby://masked/act/b3ed3ed663",
+                "description": "Enables data backup to Samsung Cloud via device Settings on the device.",
+                "message": "Enable Back up data (Samsung Cloud)",
+                "classes": null,
+                "originalType": "onURL"
+              },
+              "validationDeeplink": {
+                "deeplink": "bixby://masked/val/266037d0c5",
+                "key": "Back up data (Samsung Cloud)",
+                "resultType": "boolean",
+                "condition": "equal",
+                "value": "True"
+              }
+            }
+          ]
+        },
+        {
+          "actionName": "Reduce Touch Sensitivity",
+          "description": "It will lower screen touch sensitivity",
+          "category": "auto",
+          "stepGroups": [
+            {
+              "steps": [
+                "Navigate to Settings, then tap Display.",
+                "Tap the switch next to Touch sensitivity."
+              ],
+              "actionableDeeplink": {
+                "deeplink": "bixby://masked/act/1b0d34e9b4",
+                "description": "Disables touch sensitivity via device Settings on the device.",
+                "message": "Disable Touch sensitivity",
+                "classes": null,
+                "originalType": "offURL"
+              },
+              "validationDeeplink": {
+                "deeplink": "bixby://masked/val/6451858b28",
+                "key": "Touch sensitivity",
+                "resultType": null,
+                "condition": null,
+                "value": null
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

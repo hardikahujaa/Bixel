@@ -1,0 +1,23 @@
+.git
+.gitignore
+.github
+
+# 65 MB of model weights. The image fetches its own copy at build time, so shipping the
+# local cache in the build context would only slow the upload down.
+**/.model_cache
+
+__pycache__
+**/__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.venv
+venv
+
+# Never bake a real key into an image.
+.env
+.env.*
+
+*.md
+!README.md
