@@ -1,9 +1,22 @@
 """Embedding backend for the matcher.
 
 Uses ``fastembed`` with ONNX runtime rather than ``sentence-transformers`` with torch.
-The reason is deployment, not preference: A3 scores cold-start p95 at 8 seconds on
-free hosting, and a torch image is 2-3 GB with a 4-8 second import. This model is
-67 MB on onnxruntime, so the image is ~300-500 MB and startup is ~1-2 seconds.
+The reason is deployment, not preference: A3 scores cold-start p95 at 8 seconds on free
+hosting, and a torch image is 2-3 GB with a 4-8 second import.
+
+Measured in the built image (``docker build -t bixel:local .``), replacing an earlier
+estimate here of "~300-500 MB" that was wrong:
+
+* image size **1.13 GB** -- larger than estimated, because ``google-generativeai`` drags
+  in grpcio, protobuf and the google-api client stack, and fastembed brings tokenizers,
+  pillow and scipy. Still well short of a torch image.
+* model + index + TF-IDF load: **1.75 s** (verified with ``--network none``, which proves
+  the model is baked into the image rather than fetched at runtime)
+* first ``match()`` call: **~1 s**, because the ONNX session initialises lazily on first
+  inference. Every call after that: **21 ms median, 26 ms p95**.
+
+That first-call cost is why the model must be warmed at process start, not on the first
+request -- see ``get_model`` below.
 
 Two operational notes for M2's Dockerfile:
 
