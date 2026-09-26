@@ -5,23 +5,19 @@ parameter name or count breaks the call convention other modules already rely on
 fails immediately with a TypeError instead of surfacing as a confusing error deep in
 main.py's real pipeline later.
 
-Four of the seven are now implemented -- to_deeplink_pair, sanitize, validate and extract -- so the
-"still raises NotImplementedError" assertions for them have been replaced with assertions
-that they honour the agreed shape. Their behaviour is covered in depth by
-tests/test_projection.py, tests/test_sanitizer.py and tests/test_validator.py.
-
-Two remain stubs: variations (M4) and Cache.get_or_compute (M2). Those are
-expected to raise NotImplementedError -- that is the current, correct behaviour, not a bug.
-Each one's assertion below is what will fail, usefully, on the day it gets implemented.
+All seven are now implemented -- to_deeplink_pair, sanitize, validate, extract,
+Cache.get_or_compute and variations -- so every "still raises NotImplementedError"
+assertion has been replaced with one that honours the agreed shape. Their behaviour is
+covered in depth by tests/test_projection.py, tests/test_sanitizer.py,
+tests/test_validator.py, tests/test_cache.py and tests/test_variations.py.
 """
-import pytest
-
 from app.cache import Cache
 from app.extractor import extract
 from app.projection import to_deeplink_pair
 from app.sanitizer import sanitize
 from app.validator import validate
-from app.variations import variations
+from app.variations import MAX_COUNT, MIN_COUNT, variations
+from backend.extract.client import FakeClient, LLMUnavailable
 from student_kit.schema import Deeplink, ValidationDeepLink
 
 #: A minimal well-formed model answer, for the extract() shape test below.
@@ -33,12 +29,11 @@ LLM_ANSWER = (
 )
 
 
-# ------------------------------------------------------- still stubs, by design -----
+# ------------------------------------------------------------- implemented -----
 
 
 def test_extract_accepts_its_agreed_signature_and_returns_a_response():
-    """Implemented. Uses an injected fake client so this needs no key and no network."""
-    from backend.extract.client import FakeClient
+    """Uses an injected fake client so this needs no key and no network."""
     from student_kit.schema import ContextDeeplinkResponse
 
     result = extract(
@@ -53,15 +48,22 @@ def test_extract_accepts_its_agreed_signature_and_returns_a_response():
     assert result.contexts, "contexts is never empty -- banned project-wide"
 
 
-def test_variations_accepts_its_agreed_signature_and_is_not_implemented():
-    with pytest.raises(NotImplementedError):
-        variations("my Galaxy S22 screen is black")
+def test_variations_accepts_its_agreed_signature_and_returns_8_to_10():
+    """Uses a client that refuses, so this exercises the deterministic path --
+    needs no key and no network. tests/test_variations.py covers both paths."""
+    result = variations(
+        "my Galaxy S22 screen is black",
+        client=FakeClient(LLMUnavailable("simulated: no key")),
+    )
+    assert MIN_COUNT <= len(result) <= MAX_COUNT
+    assert all(isinstance(item, str) for item in result)
 
 
-def test_cache_get_or_compute_accepts_its_agreed_signature_and_is_not_implemented():
+def test_cache_get_or_compute_accepts_its_agreed_signature_and_computes_on_a_miss():
     cache = Cache()
-    with pytest.raises(NotImplementedError):
-        cache.get_or_compute("query", {"title": "t", "content": "c"}, lambda: None)
+    result = cache.get_or_compute("query", {"title": "t", "content": "c"}, lambda: "computed")
+    assert result == "computed"
+    assert cache.misses == 1
 
 
 def test_cache_starts_with_zero_hits_and_misses():

@@ -126,3 +126,28 @@ def test_response_is_deterministic_for_the_same_request():
     first = _post(VALID_PAYLOAD).json()
     second = _post(VALID_PAYLOAD).json()
     assert first == second
+
+
+def test_a_fallback_route_is_never_cached():
+    """A request whose LLM call fails takes extract()'s deterministic
+    fallback (still a real, valid, non-empty answer) -- but app/main.py must
+    not cache it, or a transient Gemini failure (docs/PLAN.md's named risk)
+    would serve that degraded answer to every later paraphrase forever
+    instead of retrying. Two identical requests during an outage should both
+    be misses, and both should still pass every rule."""
+    from app.main import app, get_llm_client, _cache
+    from backend.extract.client import FakeClient, LLMUnavailable
+
+    app.dependency_overrides[get_llm_client] = lambda: FakeClient(
+        [LLMUnavailable("simulated outage"), LLMUnavailable("simulated outage")]
+    )
+    try:
+        first = _post(VALID_PAYLOAD)
+        second = _post(VALID_PAYLOAD)
+    finally:
+        app.dependency_overrides.pop(get_llm_client, None)
+
+    assert first.status_code == second.status_code == 200
+    assert first.json()["contexts"] and second.json()["contexts"]
+    assert _cache.hits == 0
+    assert _cache.misses == 2

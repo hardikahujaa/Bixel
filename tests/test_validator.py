@@ -61,11 +61,26 @@ def test_all_three_golden_fixtures_pass(name):
     assert result["ok"] is True, result["errors"]
 
 
-def test_the_live_placeholder_response_passes():
-    """Whatever app/main.py serves today must satisfy the rules."""
-    from app.main import _PLACEHOLDER_RESPONSE
+def test_the_live_endpoint_response_passes():
+    """Whatever /v1/troubleshoot actually serves must satisfy the rules.
 
-    result = validate(_PLACEHOLDER_RESPONSE.model_dump())
+    extract() validates internally before returning, so this is a check that
+    the wiring in app/main.py (cache included) does not lose or mutate
+    anything on the way out -- not a re-test of extract() itself, which
+    backend/extract/tests already covers in depth.
+    """
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    response = TestClient(app).post(
+        "/v1/troubleshoot",
+        json={
+            "query": "My screen is black",
+            "siis_response": {"title": "Blank screen", "content": "Some content"},
+        },
+    )
+    result = validate(response.json())
     assert result["ok"] is True, result["errors"]
 
 
