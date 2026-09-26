@@ -23,6 +23,9 @@ onnxruntime==1.28.0
 numpy>=2.0
 
 python-dotenv>=1.0
-google-generativeai>=0.5
+# Current official Google SDK (import google.genai). google-generativeai is the legacy
+# package. Pinned exact because extract()'s model chain and prompt were verified against
+# this version.
+google-genai==2.25.0
 httpx>=0.27
 pytest>=8.0
