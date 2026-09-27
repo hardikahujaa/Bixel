@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bixel — Smart Guided Troubleshooting</title>
+<!--
+  Served by the API itself at GET / (app/main.py).
+
+  Same-origin on purpose: the service sends no CORS headers, so a page hosted anywhere else
+  would be blocked by the browser before its first request left.
+
+  Deliberately one file with no build step, no npm and no CDN. A demo that breaks because a
+  CDN is slow during judging is worse than a plain one.
+-->
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel-2:#1e222b; --line:#2a2f3a;
+    --text:#e7e9ee; --muted:#9aa3b2; --accent:#4c8dff; --ok:#32d583; --warn:#fdb022;
+    --crit:#f97066; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+       font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header{padding:22px 24px 16px;border-bottom:1px solid var(--line)}
+  h1{margin:0 0 4px;font-size:20px;letter-spacing:-.01em}
+  h1 span{color:var(--accent)}
+  .sub{color:var(--muted);font-size:13px}
+  main{display:grid;grid-template-columns:minmax(320px,420px) 1fr;gap:20px;
+       padding:20px 24px 40px;align-items:start}
+  @media (max-width:900px){main{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+  .card h2{margin:0 0 12px;font-size:13px;text-transform:uppercase;
+           letter-spacing:.06em;color:var(--muted)}
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 5px}
+  select,textarea,input{width:100%;background:var(--panel-2);color:var(--text);
+       border:1px solid var(--line);border-radius:7px;padding:9px 10px;font-size:13px;
+       font-family:inherit}
+  textarea{resize:vertical;font-family:var(--mono);font-size:12px;line-height:1.5}
+  button{background:var(--accent);color:#fff;border:0;border-radius:7px;padding:10px 16px;
+       font-size:14px;font-weight:600;cursor:pointer;margin-top:14px;width:100%}
+  button:disabled{opacity:.55;cursor:default}
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:4px}
+  .stat{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+  .stat b{display:block;font-family:var(--mono);font-size:17px;font-weight:600}
+  .stat small{color:var(--muted);font-size:11px}
+  .goal{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+        padding:15px;margin-bottom:14px}
+  .goal-h{font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:4px;
+          word-break:break-word}
+  .goal-t{font-size:17px;font-weight:650;margin-bottom:10px}
+  .action{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+  .action-t{font-weight:620;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .badge{font-size:10px;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px;
+         border-radius:20px;font-weight:700}
+  .b-auto{background:rgba(50,213,131,.15);color:var(--ok)}
+  .b-manual{background:rgba(154,163,178,.15);color:var(--muted)}
+  .b-critical{background:rgba(249,112,102,.15);color:var(--crit)}
+  .desc{color:var(--muted);font-size:13px;margin:3px 0 9px}
+  ol{margin:0;padding-left:20px}
+  ol li{margin-bottom:5px;font-size:13.5px}
+  .dl{margin-top:10px;background:var(--panel-2);border:1px solid var(--line);
+      border-radius:8px;padding:10px}
+  .dl-b{background:transparent;border:1px solid var(--accent);color:var(--accent);
+        width:auto;margin:0 0 7px;padding:6px 12px;font-size:12.5px}
+  .dl code{font-family:var(--mono);font-size:11.5px;color:var(--muted);word-break:break-all}
+  .dl .note{font-size:11px;color:var(--warn);margin-top:6px}
+  .empty{color:var(--muted);text-align:center;padding:50px 20px;font-size:14px}
+  .err{background:rgba(249,112,102,.12);border:1px solid var(--crit);color:var(--crit);
+       border-radius:8px;padding:12px;font-size:13px}
+  .foot{color:var(--muted);font-size:11.5px;margin-top:12px;line-height:1.5}
+  .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.35);
+        border-top-color:#fff;border-radius:50%;animation:s .7s linear infinite;
+        vertical-align:-2px;margin-right:7px}
+  @keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Bixel <span>·</span> Smart Guided Troubleshooting</h1>
+  <div class="sub">A Samsung support document plus a complaint becomes a validated,
+    deeplinked repair plan. Every step is traced back to the supplied text.</div>
+</header>
+
+<main>
+  <div>
+    <div class="card">
+      <h2>Request</h2>
+      <label for="scenario">Scenario</label>
+      <select id="scenario"><option value="">Loading…</option></select>
+      <label for="query">User complaint</label>
+      <textarea id="query" rows="3"></textarea>
+      <label for="title">SIIS document title</label>
+      <input id="title" type="text">
+      <label for="content">SIIS document content</label>
+      <textarea id="content" rows="9"></textarea>
+      <button id="go">Get repair plan</button>
+      <div class="foot" id="reqnote"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Live service metrics</h2>
+      <div class="stats">
+        <div class="stat"><b id="m-last">—</b><small>this request</small></div>
+        <div class="stat"><b id="m-p95">—</b><small>p95 latency</small></div>
+        <div class="stat"><b id="m-hit">—</b><small>cache hit rate</small></div>
+        <div class="stat"><b id="m-cost">$0.00</b><small>cost per request</small></div>
+      </div>
+      <div class="foot" id="m-foot"></div>
+    </div>
+  </div>
+
+  <div id="out"><div class="card empty">Pick a scenario and request a plan.</div></div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+let scenarios = [];
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+async function loadScenarios(){
+  try{
+    const data = await (await fetch("/demo/scenarios")).json();
+    scenarios = data.scenarios || [];
+    const sel = $("scenario");
+    sel.innerHTML = "";
+    let group = null, og = null;
+    scenarios.forEach((s, i) => {
+      if (s.group !== group){ group = s.group; og = document.createElement("optgroup");
+        og.label = group; sel.appendChild(og); }
+      const o = document.createElement("option");
+      o.value = i; o.textContent = `${s.id} — ${s.query.slice(0, 62)}`;
+      og.appendChild(o);
+    });
+    sel.onchange = fill;
+    if (scenarios.length) { sel.value = pickDefault(); fill(); }
+  }catch(e){
+    $("scenario").innerHTML = "<option>could not load scenarios</option>";
+  }
+}
+
+// row_21 leads because it is the cleanest demo: a real catalog match with a deeplink.
+function pickDefault(){
+  const i = scenarios.findIndex(s => s.id === "row_21");
+  return i >= 0 ? i : 0;
+}
+
+function fill(){
+  const s = scenarios[$("scenario").value];
+  if (!s) return;
+  $("query").value = s.query;
+  $("title").value = s.siis_response.title;
+  $("content").value = s.siis_response.content;
+  $("reqnote").textContent = s.group.startsWith("Unseen")
+    ? "This document is not from the Samsung kit. It tests whether the pipeline works on text it has never seen."
+    : "One of the 20 graded kit rows.";
+}
+
+async function refreshMetrics(){
+  try{
+    const m = await (await fetch("/metrics")).json();
+    $("m-p95").textContent = m.latency_ms.p95 != null ? m.latency_ms.p95 + " ms" : "—";
+    $("m-hit").textContent = m.cache.hit_rate != null
+      ? Math.round(m.cache.hit_rate * 100) + "%" : "—";
+    $("m-foot").innerHTML =
+      `${m.cache.hits} hit${m.cache.hits === 1 ? "" : "s"} / ${m.cache.misses} miss${
+        m.cache.misses === 1 ? "" : "es"} across ${m.cache.buckets} document bucket${
+        m.cache.buckets === 1 ? "" : "s"}.<br>` +
+      `Cache matches paraphrases by meaning at a ${m.cache.similarity_threshold} similarity ` +
+      `threshold, so a reworded complaint hits without a fresh model call.<br>` +
+      `Build <code>${esc(m.build)}</code> · model <code>${esc(m.model_chain[0])}</code>`;
+  }catch(e){ /* dashboard is informational; never block the demo on it */ }
+}
+
+function render(resp, ms){
+  const out = $("out");
+  const ctx = resp.contexts || [];
+  if (!ctx.length){ out.innerHTML = `<div class="card err">Empty response.</div>`; return; }
+
+  out.innerHTML = ctx.map(g => `
+    <div class="goal">
+      <div class="goal-h">${esc(g.goal)}</div>
+      <div class="goal-t">${esc(g.title)} <span style="color:var(--muted);font-weight:400;
+        font-size:13px">· confidence ${g.score}</span></div>
+      ${(g.actions || []).map(a => `
+        <div class="action">
+          <div class="action-t">${esc(a.actionName)}
+            <span class="badge b-${esc(a.category)}">${esc(a.category)}</span></div>
+          <div class="desc">${esc(a.description)}</div>
+          ${(a.stepGroups || []).map(sg => `
+            <ol>${(sg.steps || []).map(s => `<li>${esc(s)}</li>`).join("")}</ol>
+            ${sg.actionableDeeplink ? `
+              <div class="dl">
+                <button class="dl-b" onclick="copyUri('${esc(sg.actionableDeeplink.deeplink)}',this)">
+                  Fix this → copy deeplink</button>
+                <div><code>${esc(sg.actionableDeeplink.deeplink)}</code></div>
+                <div style="font-size:12px;margin-top:5px">${esc(sg.actionableDeeplink.description)}</div>
+                <div class="note">Samsung supplied this catalog with its URIs masked, so this
+                  copies the URI rather than pretending to launch Bixby. It is byte-identical
+                  to the catalog entry — never generated by the model.</div>
+              </div>` : ""}
+          `).join("")}
+        </div>`).join("")}
+    </div>`).join("") +
+    `<div class="card foot">Returned in ${ms} ms · ${ctx.length} goal${
+      ctx.length === 1 ? "" : "s"} · every step above appears in the document you supplied.</div>`;
+}
+
+function copyUri(uri, btn){
+  navigator.clipboard?.writeText(uri);
+  const old = btn.textContent; btn.textContent = "Copied ✓";
+  setTimeout(() => { btn.textContent = old; }, 1400);
+}
+
+$("go").onclick = async () => {
+  const btn = $("go");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Working…';
+  $("out").innerHTML = `<div class="card empty"><span class="spin"></span>
+    Matching the catalog, then asking the model. An uncached request takes a few seconds.</div>`;
+  const t0 = performance.now();
+  try{
+    const res = await fetch("/v1/troubleshoot", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        query: $("query").value,
+        siis_response: {title: $("title").value, content: $("content").value}
+      })
+    });
+    const ms = Math.round(performance.now() - t0);
+    if (!res.ok){
+      $("out").innerHTML = `<div class="card err">HTTP ${res.status}. ${
+        esc((await res.text()).slice(0, 300))}</div>`;
+    } else {
+      render(await res.json(), ms);
+      $("m-last").textContent = ms + " ms";
+    }
+  }catch(e){
+    $("out").innerHTML = `<div class="card err">${esc(e.message)}</div>`;
+  }finally{
+    btn.disabled = false; btn.textContent = "Get repair plan";
+    refreshMetrics();
+  }
+};
+
+loadScenarios();
+refreshMetrics();
+</script>
+</body>
+</html>

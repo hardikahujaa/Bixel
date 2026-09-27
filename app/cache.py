@@ -152,6 +152,24 @@ class Cache:
             self._evict_if_needed(bucket)
         return response
 
+    def stats(self) -> dict[str, Any]:
+        """Read-only snapshot for ``GET /metrics`` and the demo dashboard.
+
+        Read-only on purpose: the dashboard must be able to show what the cache is doing
+        without being able to change it. ``hit_rate`` is ``None`` rather than 0.0 on a cold
+        cache, because "no requests yet" and "every request missed" are different facts and
+        a dashboard that reports 0% for the first is lying.
+        """
+        total = self.hits + self.misses
+        return {
+            "hits": self.hits,
+            "misses": self.misses,
+            "hit_rate": (self.hits / total) if total else None,
+            "buckets": len(self._buckets),
+            "entries": sum(len(bucket) for bucket in self._buckets.values()),
+            "similarity_threshold": self._threshold,
+        }
+
     def _evict_if_needed(self, bucket: list[tuple[np.ndarray, Any]]) -> None:
         """Keep the cache bounded. Oldest entries and oldest buckets go first.
 

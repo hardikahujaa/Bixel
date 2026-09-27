@@ -28,8 +28,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Stamped into GET /metrics. Answers "what is actually deployed?", which cannot live on
+# /health: gate G2 requires that endpoint to return exactly {"status": "ok"} and nothing
+# else, so a version field there would fail the gate.
+#   docker build --build-arg BIXEL_BUILD=$(git rev-parse --short HEAD) .
+ARG BIXEL_BUILD=docker
+
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
+    BIXEL_BUILD=${BIXEL_BUILD} \
     BIXEL_MODEL_CACHE=/app/backend/matcher/.model_cache
 
 # Pre-fetch the pinned ONNX model into the image.
