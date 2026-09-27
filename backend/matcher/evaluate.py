@@ -188,7 +188,10 @@ def select(reports: list[Report]) -> Report:
 
 
 def main() -> None:
-    matcher = DeeplinkMatcher()
+    # memoize_queries: the sweep calls match() with the same ~47 texts once per
+    # threshold combination, and embeddings do not depend on thresholds. Without it
+    # this script ran for over ten minutes.
+    matcher = DeeplinkMatcher(memoize_queries=True)
     counts = {v.value: sum(1 for l in LABELS if l.verdict is v) for v in Verdict}
     print(f"labelled set: {counts}  adversarial: {len(ADVERSARIAL)}")
     print(f"index: {matcher.manifest['model']} dim={matcher.manifest['dim']} "

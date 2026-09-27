@@ -260,3 +260,62 @@ def test_labelled_set_shape_is_what_was_reported():
     counts = {v.value: sum(1 for l in LABELS if l.verdict is v) for v in Verdict}
     assert counts == {"match": 5, "none": 30, "weak": 3}
     assert len(ADVERSARIAL) == 9
+
+
+# ------------------------------------------------------------- query memo -----
+
+
+def test_memoized_matcher_returns_identical_results():
+    """``memoize_queries=True`` must be a pure speed-up, never a behaviour change.
+
+    It exists for evaluate.py's threshold sweep, which re-embeds the same ~47 texts once
+    per threshold combination. Caching those cut the sweep from over ten minutes to ~2,
+    and the selected thresholds and scores came out identical -- but a memo that quietly
+    altered a score would invalidate every measured number in this module, so it is
+    checked rather than assumed.
+    """
+    plain = DeeplinkMatcher(DEFAULT_THRESHOLDS)
+    memoized = DeeplinkMatcher(DEFAULT_THRESHOLDS, memoize_queries=True)
+
+    texts = [
+        "5. Touch Sensitivity Setting. To turn off this feature, navigate to Settings, "
+        "tap Display, and then tap the switch next to Touch sensitivity.",
+        "7. Safe Mode. Restart the device in Safe mode to check for a third-party app.",
+        "Use Multi window. From the screen's right side, swipe left to open the Edge panel.",
+        "",
+        "   ",
+    ]
+    for text in texts:
+        expected = [(c.catalog_id, c.score) for c in plain.match(text)]
+        # run twice: the second call is the one served from the memo
+        first = [(c.catalog_id, c.score) for c in memoized.match(text)]
+        second = [(c.catalog_id, c.score) for c in memoized.match(text)]
+        assert first == expected, f"memo changed the result for {text[:40]!r}"
+        assert second == expected, f"memo hit changed the result for {text[:40]!r}"
+
+
+def test_memo_is_off_by_default():
+    """Production must not grow a second cache. app/cache.py already handles repeat
+    queries at the response level."""
+    assert DeeplinkMatcher(DEFAULT_THRESHOLDS)._query_memo is None
+    assert DeeplinkMatcher(DEFAULT_THRESHOLDS, memoize_queries=True)._query_memo == {}
+
+
+def test_memo_actually_avoids_recomputation(monkeypatch):
+    """Guards against the memo being present but never consulted."""
+    import backend.matcher.matcher as module
+
+    memoized = DeeplinkMatcher(DEFAULT_THRESHOLDS, memoize_queries=True)
+    text = "Adjust the screen zoom in Display settings."
+    memoized.match(text)
+
+    calls: list[int] = []
+    real = module.embed_queries
+
+    def counting(texts, *args, **kwargs):
+        calls.append(1)
+        return real(texts, *args, **kwargs)
+
+    monkeypatch.setattr(module, "embed_queries", counting)
+    memoized.match(text)
+    assert calls == [], "the second call should not embed again"

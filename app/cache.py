@@ -68,6 +68,18 @@ from backend.matcher.embedder import cosine_scores, embed_queries
 
 SIMILARITY_THRESHOLD = 0.85
 
+#: Bounds, so a long-running deployment cannot grow this without limit. Nothing was
+#: evicted before, and every distinct (document, query) pair adds a 384-float embedding
+#: plus a whole response object -- fine for a demo, unbounded over a judging window where
+#: the endpoint may be hit repeatedly.
+#:
+#: Both caps sit far above realistic use and so change none of the measured numbers: the
+#: kit produces 11 buckets, and 20 queries x 10 paraphrases is ~10 entries per bucket, so
+#: these are roughly 6x and 23x headroom. Eviction is oldest-first, which is the right
+#: policy here because the queries that matter are the ones being asked now.
+MAX_ENTRIES_PER_BUCKET = 64
+MAX_BUCKETS = 256
+
 
 def _content_key(siis: dict[str, Any]) -> str:
     """Hash the SIIS payload's meaning, not its exact bytes.
@@ -82,10 +94,17 @@ def _content_key(siis: dict[str, Any]) -> str:
 
 
 class Cache:
-    def __init__(self, threshold: float = SIMILARITY_THRESHOLD) -> None:
+    def __init__(
+        self,
+        threshold: float = SIMILARITY_THRESHOLD,
+        max_entries_per_bucket: int = MAX_ENTRIES_PER_BUCKET,
+        max_buckets: int = MAX_BUCKETS,
+    ) -> None:
         self.hits = 0
         self.misses = 0
         self._threshold = threshold
+        self._max_entries_per_bucket = max_entries_per_bucket
+        self._max_buckets = max_buckets
         # content hash -> [(query embedding, response), ...], most recent last.
         self._buckets: dict[str, list[tuple[np.ndarray, Any]]] = {}
 
@@ -130,4 +149,18 @@ class Cache:
         response = fn()
         if store_if is None or store_if(response):
             bucket.append((query_vector, response))
+            self._evict_if_needed(bucket)
         return response
+
+    def _evict_if_needed(self, bucket: list[tuple[np.ndarray, Any]]) -> None:
+        """Keep the cache bounded. Oldest entries and oldest buckets go first.
+
+        Dicts preserve insertion order, so the first key is the least recently *created*
+        bucket. That is a deliberate simplification over true LRU: a bucket is one SIIS
+        document, the kit has 11 of them, and the cap is 256 -- so this path effectively
+        never runs in practice and is here to bound the worst case, not to be clever.
+        """
+        while len(bucket) > self._max_entries_per_bucket:
+            bucket.pop(0)
+        while len(self._buckets) > self._max_buckets:
+            self._buckets.pop(next(iter(self._buckets)))

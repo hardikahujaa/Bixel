@@ -135,8 +135,19 @@ class DeeplinkMatcher:
     fast but not free, and the embedding model must never be loaded per request.
     """
 
-    def __init__(self, thresholds: Thresholds | None = None) -> None:
+    def __init__(
+        self, thresholds: Thresholds | None = None, memoize_queries: bool = False
+    ) -> None:
         self.thresholds = thresholds or DEFAULT_THRESHOLDS
+        # Opt-in, and off in production on purpose -- app/cache.py already handles repeat
+        # queries at the response level, so a second memo here would only grow memory.
+        #
+        # It exists for evaluate.py's threshold sweep, which calls match() with the same
+        # ~47 texts once per threshold combination. Embeddings depend only on the text, so
+        # without this the sweep pays 231 x 47 embeddings to compute 47 distinct vectors,
+        # and the script took over ten minutes -- long enough that nobody re-runs the
+        # tuning tool the module docs tell them to re-run.
+        self._query_memo: dict[str, np.ndarray] | None = {} if memoize_queries else None
         self.entries: list[CatalogEntry] = load_catalog()
         vectors, ids, manifest = load_index()
         if ids != [entry.id for entry in self.entries]:
@@ -153,7 +164,13 @@ class DeeplinkMatcher:
     # -- signals ---------------------------------------------------------------
 
     def _semantic(self, text: str) -> np.ndarray:
-        query = embed_queries([text])[0]
+        if self._query_memo is not None:
+            query = self._query_memo.get(text)
+            if query is None:
+                query = embed_queries([text])[0]
+                self._query_memo[text] = query
+        else:
+            query = embed_queries([text])[0]
         return cosine_scores(query, self.vectors)
 
     def _lexical_scores(self, text: str) -> np.ndarray:
