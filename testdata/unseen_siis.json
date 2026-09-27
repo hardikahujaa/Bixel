@@ -1,0 +1,69 @@
+{
+  "_readme": "Our own SIIS payloads, for measuring A4 (generalization). Written by hand in the same {title, content} shape as student_kit/siis_responses.json, with the same markdown-ish '##' sections and short instruction lines. Deliberately in domains the kit never covers -- all 20 kit rows are screen/display problems -- so that extract() is exercised on documents it has never seen. This matters because both the prompt and the grounding threshold were developed against the kit: the kit rows can no longer tell us whether the pipeline generalizes. The failure to look for here is the model answering from its own knowledge of Samsung phones rather than from the supplied text, which is exactly what A4 punishes. Kept out of fixtures/ (golden responses) and out of student_kit/ (Samsung's material, committed unmodified). Scored by scripts/run_harness.py.",
+  "payloads": [
+    {
+      "id": "unseen_battery",
+      "query": "My Galaxy S23 battery drops from full to about twenty percent by lunchtime even though I barely touch the phone.",
+      "siis_response": {
+        "title": "Battery drains quickly on a Galaxy phone or tablet",
+        "content": "Smartphone,Tablet Battery drains quickly on a Galaxy phone or tablet: # Reducing Battery Drain\nIf your device loses charge faster than you expect, the steps below narrow down what is consuming the power.\n## Step 1: Review Battery Usage\nOpen Settings and tap Battery.\nTap View details to see which apps have used the most power since the last full charge.\nAn app near the top of that list that you have not been using is the most likely cause.\n## Step 2: Restrict Background Activity\nFor an app you rarely use, open Settings, tap Apps, select the app, then tap Battery.\nSelect Restricted so the app cannot run in the background.\n## Step 3: Reduce Screen Power Use\nA bright screen is often the largest single drain.\nOpen Settings and tap Display.\nLower the brightness slider, or turn on Adaptive brightness so it adjusts to your surroundings.\nTap Screen timeout and choose a shorter interval.\n## Step 4: Turn Off Unused Connections\nSwipe down from the top of the screen to open the Quick settings panel.\nTurn off Bluetooth, location and mobile hotspot when you are not using them.\n## Step 5: Check for a Faulty Battery\nIf the device is more than two years old and none of the above helps, the battery may have degraded.\nContact Samsung Support to arrange a battery health check."
+      }
+    },
+    {
+      "id": "unseen_wifi",
+      "query": "My tablet keeps dropping off my home Wi-Fi every few minutes and I have to reconnect it by hand.",
+      "siis_response": {
+        "title": "Wi-Fi keeps disconnecting on a Samsung phone or tablet",
+        "content": "Smartphone,Tablet Wi-Fi keeps disconnecting on a Samsung phone or tablet: # Fixing an Unstable Wi-Fi Connection\nA connection that drops repeatedly is usually caused by power saving, a stored network profile, or the router itself.\n## Step 1: Forget and Rejoin the Network\nOpen Settings and tap Connections.\nTap Wi-Fi and select the network you are having trouble with.\nTap Forget, then select the network again and enter the password.\n## Step 2: Stop the Device Switching Networks\nOpen Settings, tap Connections, then tap Wi-Fi.\nTap More options, then tap Intelligent Wi-Fi.\nTurn off Switch to mobile data so the device stops moving off Wi-Fi when the signal dips.\n## Step 3: Check Power Saving Settings\nOpen Settings and tap Battery.\nTurn off Power saving, which can disconnect Wi-Fi while the screen is off.\n## Step 4: Restart the Router\nUnplug the router from power, wait thirty seconds, then plug it back in.\nWait for the router lights to settle before reconnecting the device.\n## Step 5: Reset Network Settings\nOpen Settings and tap General management.\nTap Reset, then tap Reset network settings.\nNote that this clears every saved Wi-Fi password on the device."
+      }
+    },
+    {
+      "id": "unseen_camera",
+      "query": "The camera on my Galaxy A54 will not focus properly and every photo comes out blurry.",
+      "siis_response": {
+        "title": "Camera will not focus on a Galaxy phone",
+        "content": "Smartphone Camera will not focus on a Galaxy phone: # Resolving Camera Focus Problems\nBlurry photos are most often a dirty lens or a software setting rather than a hardware fault.\n## Step 1: Clean the Lens\nWipe the rear camera lens with a soft, dry cloth.\nRemove any case or screen protector that overlaps the lens opening.\n## Step 2: Tap to Focus\nOpen the Camera app.\nTap the part of the scene you want sharp, and wait for the focus indicator to settle before taking the shot.\n## Step 3: Turn Off Special Modes\nSome modes fix the focus distance.\nIn the Camera app, select Photo rather than Pro or Macro.\nTurn off Super steady mode if it is enabled.\n## Step 4: Clear the Camera App Cache\nOpen Settings and tap Apps.\nSelect Camera, tap Storage, then tap Clear cache.\n## Step 5: Test in Safe Mode\nPress and hold the Power button, touch and hold Power off, then tap Safe mode.\nOpen the Camera app and take a photo to check whether another app is interfering.\n## Step 6: Request a Diagnostic\nIf photos are still blurry, contact Samsung Support to arrange a camera diagnostic."
+      }
+    },
+    {
+      "id": "unseen_storage",
+      "query": "I keep getting a storage full warning on my phone and it will not let me install anything new.",
+      "siis_response": {
+        "title": "Storage space is full on a Samsung phone or tablet",
+        "content": "Smartphone,Tablet Storage space is full on a Samsung phone or tablet: # Freeing Up Storage Space\nA device with almost no free storage slows down and cannot install updates.\n## Step 1: Review What Is Using Space\nOpen Settings and tap Battery and device care.\nTap Storage to see a breakdown by category.\n## Step 2: Remove Unused Applications\nOpen Settings and tap Apps.\nSelect an app you no longer use and tap Uninstall.\n## Step 3: Clear Cached Files\nOpen Settings and tap Battery and device care.\nTap Storage, then tap Clean now to remove temporary files.\n## Step 4: Move Media to a Memory Card\nInsert a microSD card if the device supports one.\nOpen the My Files app, select the photos or videos to move, then choose Move and select the SD card.\n## Step 5: Empty the Recycle Bin\nOpen the Gallery app and tap More options.\nTap Recycle bin, then tap Empty to permanently delete the items inside."
+      }
+    },
+    {
+      "id": "unseen_overheating",
+      "query": "My Galaxy S22 gets uncomfortably hot when I am charging it or using the maps app.",
+      "siis_response": {
+        "title": "Device becomes hot during use or charging",
+        "content": "Smartphone,Tablet Device becomes hot during use or charging: # Managing Device Temperature\nSome warmth during charging or heavy use is normal. The steps below cover when it becomes excessive.\n## Step 1: Remove the Case While Charging\nTake the device out of its case so heat can escape.\nMove it off soft surfaces such as a bed or sofa.\n## Step 2: Close Demanding Applications\nTap the Recents key and close apps you are not using.\nNavigation and camera apps generate the most heat over long periods.\n## Step 3: Use the Supplied Charger\nCharge with the cable and adapter that came with the device.\nA damaged or third-party charger can deliver power inconsistently.\n## Step 4: Avoid Direct Sunlight\nDo not leave the device on a car dashboard or in direct sun while charging.\n## Step 5: Check for a Faulty App\nPress and hold the Power button, touch and hold Power off, then tap Safe mode.\nUse the device for a short period and check whether it still becomes hot.\n## Step 6: Stop Using a Device That Is Too Hot\nIf the device shows a temperature warning and shuts down repeatedly, stop charging it and contact Samsung Support."
+      }
+    },
+    {
+      "id": "unseen_bluetooth",
+      "query": "My Galaxy Buds will not pair with my phone any more, they just show as unavailable.",
+      "siis_response": {
+        "title": "Bluetooth device will not pair with a Samsung phone",
+        "content": "Smartphone,Mobile Accessories Bluetooth device will not pair with a Samsung phone: # Resolving Bluetooth Pairing Failures\nA device that previously paired and now will not usually needs its stored pairing removing.\n## Step 1: Remove the Stored Pairing\nOpen Settings and tap Connections.\nTap Bluetooth, then tap the settings icon next to the device.\nTap Unpair, then put the accessory back into pairing mode and select it again.\n## Step 2: Check the Accessory Is Charged\nPlace both earbuds in the charging case and confirm the case has charge.\nAn accessory with a flat battery will not appear in the list.\n## Step 3: Restart Bluetooth\nSwipe down from the top of the screen to open the Quick settings panel.\nTurn Bluetooth off, wait a few seconds, then turn it back on.\n## Step 4: Clear the Bluetooth Cache\nOpen Settings and tap Apps.\nTap More options, then Show system apps.\nSelect Bluetooth, tap Storage, then tap Clear cache.\n## Step 5: Reset the Accessory\nPlace both earbuds in the case, close the lid, and hold the touchpads for ten seconds to reset them.\n## Step 6: Reset Network Settings\nOpen Settings and tap General management.\nTap Reset, then tap Reset network settings, which also clears Bluetooth pairings."
+      }
+    },
+    {
+      "id": "unseen_notifications",
+      "query": "I stopped getting notifications from WhatsApp and only see them when I actually open the app.",
+      "siis_response": {
+        "title": "Notifications are delayed or missing for an app",
+        "content": "Smartphone,Tablet Notifications are delayed or missing for an app: # Restoring App Notifications\nMissing notifications are almost always a battery or notification permission setting rather than a fault.\n## Step 1: Confirm Notifications Are Allowed\nOpen Settings and tap Notifications.\nTap App notifications and confirm the app is turned on.\n## Step 2: Stop the Device Sleeping the App\nOpen Settings and tap Battery.\nTap Background usage limits, then tap Deep sleeping apps.\nRemove the app from that list if it appears there.\n## Step 3: Turn Off Power Saving for the App\nOpen Settings and tap Apps.\nSelect the app, tap Battery, then select Unrestricted.\n## Step 4: Check Do Not Disturb\nSwipe down from the top of the screen to open the Quick settings panel.\nConfirm Do not disturb is turned off.\n## Step 5: Clear the App Cache\nOpen Settings and tap Apps.\nSelect the app, tap Storage, then tap Clear cache."
+      }
+    },
+    {
+      "id": "unseen_charging",
+      "query": "My phone charges really slowly now, it takes most of the night to fill up.",
+      "siis_response": {
+        "title": "Device charges slowly on a Samsung phone or tablet",
+        "content": "Smartphone,Tablet Device charges slowly on a Samsung phone or tablet: # Improving Charging Speed\nSlow charging is usually the cable, the adapter, or a setting rather than the battery.\n## Step 1: Inspect the Cable and Port\nCheck the cable for damage and the charging port for lint or debris.\nShine a light into the port and clear it gently with a dry brush.\n## Step 2: Use a Fast Charging Adapter\nCharge with the adapter supplied with the device.\nCharging from a computer USB port is significantly slower.\n## Step 3: Turn On Fast Charging\nOpen Settings and tap Battery.\nTap More battery settings and turn on Fast charging.\n## Step 4: Avoid Using the Device While Charging\nPut the device down and turn off the screen while it charges.\nUsing navigation or games while charging can cancel out the incoming power.\n## Step 5: Charge in a Cooler Place\nA hot device charges more slowly to protect the battery.\nMove it out of direct sunlight and remove the case.\n## Step 6: Have the Battery Checked\nIf charging is still slow with the original adapter, contact Samsung Support to arrange a battery health check."
+      }
+    }
+  ]
+}
