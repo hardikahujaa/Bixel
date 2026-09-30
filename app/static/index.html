@@ -141,9 +141,17 @@ async function loadScenarios(){
   }
 }
 
-// row_21 leads because it is the cleanest demo: a real catalog match with a deeplink.
+// row_12 leads, chosen by measurement rather than by looking clean. Against its full kit
+// document it attached the real "Disable Edge panels" toggle on 5 of 5 uncached runs, with
+// an `auto` badge. row_21 led here previously and was the wrong call: on the full kit
+// document it produced a deeplink on 0 of 5 runs, so the demo's headline beat never fired.
+//
+// row_12 is also the better story. It is one of the kit's documented mismatches -- the user
+// asks how to remove a floating circle and the kit pairs that with a Multi window and App
+// pairs document (docs/KIT_NOTES.md) -- and the system still lands on the correct Settings
+// toggle. Robustness on a mismatched document and a real catalog deeplink, in one click.
 function pickDefault(){
-  const i = scenarios.findIndex(s => s.id === "row_21");
+  const i = scenarios.findIndex(s => s.id === "row_12");
   return i >= 0 ? i : 0;
 }
 

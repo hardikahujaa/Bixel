@@ -24,40 +24,53 @@ Page is open, nothing clicked yet.
 > validated repair plan, where every step is traceable and every shortcut is a real Samsung
 > deeplink. This page is the deployed service — there is nothing else running."
 
-## 2 · The clean case — `row_21` (about 60 seconds)
+## 2 · The headline case — `row_12` (about 60 seconds)
 
-It is selected by default. Read the complaint out loud: *"Galaxy S22 screen inputs are
-delayed and the touch responsiveness is laggy."*
+It is selected by default. Read the complaint out loud: *"Galaxy S25 has a floating circle
+that constantly hovers on my screen."*
+
+Worth knowing before you say a word about it: the kit pairs that complaint with a document
+about **Multi window and App pairs**, which is not what the user asked about. It is one of
+the kit's documented mismatches (`docs/KIT_NOTES.md`). That is the point of leading with it.
 
 Click **Get repair plan**. While it runs:
 
 > "It is matching the document's sections against Samsung's catalog of 578 deeplinks first,
 > then asking Gemini to build the plan."
 
-When it lands, point at **the steps** first — this beat fires every time:
+When it lands, point at **the steps** first:
 
 > "Each of these is a line from the document we supplied, not something the model knew about
 > Samsung phones. Anything it cannot trace back to the source text gets dropped before you
 > see it."
 
-**On the deeplink, read this before you record.** A deeplink will *sometimes* appear on this
-step with an `auto` badge, and sometimes not. That is measured, not bad luck: shortcut
-selection is non-deterministic even at temperature 0 — the same byte-identical request
-produced a deeplink 3 times out of 3, then 0 times out of 3, then once again. So:
+Then point at the **`auto` badge and the deeplink**:
 
-- **If a deeplink is on screen**, point at it: *"this URI is copied byte-for-byte from
-  Samsung's catalog. The model never sees a URI and is never asked for one — it picks from a
-  numbered list, so it cannot invent a link."* Then the note under the button: *"Samsung
-  supplied the catalog with its URIs masked, so we copy and say so rather than faking a Bixby
-  launch."*
-- **If there is no deeplink**, do not re-run hoping for one and do not pretend. Say the true
-  thing, which is a better answer anyway: *"most sections have no matching Settings shortcut —
-  the catalog is Settings toggles and these documents mostly describe physical checks. The
-  system says so instead of attaching a plausible wrong one. Zero wrong deeplinks across all
-  twenty graded queries."*
+> "The knowledge-base document it was handed is about Multi window — it does not answer the
+> question. It still found the right Settings toggle: Disable Edge panels, which is what that
+> floating circle actually is. And this URI is copied byte-for-byte from Samsung's catalog.
+> The model never sees a URI and is never asked for one — it picks from a numbered list, so
+> it cannot invent a link."
 
-Either way the point lands. The differentiator is that a wrong deeplink is impossible, not
-that every step has one.
+Then the note under the button:
+
+> "Samsung supplied the catalog with its URIs masked, so we copy them and say so rather than
+> faking a Bixby launch."
+
+**Why this row and not another.** Measured, not guessed: on its full kit document `row_12`
+attached that deeplink on **5 of 5** uncached runs. `row_21` led here previously and was the
+wrong choice — on its full kit document it produced a deeplink on **0 of 5** runs, so the
+headline beat never fired. If you want a second opinion on camera, `row_12` is the one that
+holds up.
+
+**If a deeplink ever fails to appear**, do not re-run hoping for one and do not pretend. Say
+the true thing, which is a good answer anyway:
+
+> "Most sections have no matching Settings shortcut — the catalog is Settings toggles and
+> these documents mostly describe physical checks. The system says so instead of attaching a
+> plausible wrong one. Zero wrong deeplinks across all twenty graded queries."
+
+The differentiator is that a wrong deeplink is impossible, not that every step has one.
 
 ## 3 · Three complaints in one query — `row_19` (about 45 seconds)
 
@@ -69,12 +82,20 @@ Click **Get repair plan** → **three separate goals come back**, one per compla
 
 ## 4 · The cache — reword it (about 40 seconds)
 
-Go back to `row_21`, then edit the complaint box to reword it — *"my S22 is slow to respond
-when I touch the screen"* — and submit.
+Go back to `row_12`, then replace the complaint box with this rewording and submit:
 
-> "Different words, same problem. That came back in about twenty milliseconds instead of
-> seven seconds, because the cache matches on meaning rather than on the exact string. Zero
-> cost, because no model call happened."
+> That floating utility dot on my Galaxy S25 needs to go. It hovers continuously, showing
+> shortcuts for volume adjustment, screen locking, and app navigation, but I want it
+> disabled.
+
+**Use that wording, not one you improvise.** It is from the committed paraphrase file and it
+is verified to hit — measured at 15 ms against the same document. Six of the eight committed
+`row_12` paraphrases hit; a phrasing invented on the spot may fall below the 0.85 similarity
+threshold and quietly take a full model call instead, which kills the beat on camera.
+
+> "Different words, same problem. That came back in about fifteen milliseconds instead of
+> several seconds, because the cache matches on meaning rather than on the exact string.
+> Zero cost, because no model call happened."
 
 Point at the **metrics panel**: latency, hit rate, `$0.00`. These are live from `/metrics`,
 not typed in.
