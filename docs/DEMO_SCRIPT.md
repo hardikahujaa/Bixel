@@ -57,11 +57,13 @@ Then the note under the button:
 > "Samsung supplied the catalog with its URIs masked, so we copy them and say so rather than
 > faking a Bixby launch."
 
-**Why this row and not another.** Measured, not guessed: on its full kit document `row_12`
-attached that deeplink on **5 of 5** uncached runs. `row_21` led here previously and was the
-wrong choice — on its full kit document it produced a deeplink on **0 of 5** runs, so the
-headline beat never fired. If you want a second opinion on camera, `row_12` is the one that
-holds up.
+**Why this row and not another.** Measured, not guessed: through the demo page's own
+payload, `row_12` attached that deeplink on **7 of 8** uncached runs. `row_21` led here
+previously and was the wrong choice — on its full kit document it produced a deeplink on
+**0 of 5** runs, so the headline beat never fired.
+
+One in eight still comes back without it, so read the fallback line below before you record
+rather than discovering it live.
 
 **If a deeplink ever fails to appear**, do not re-run hoping for one and do not pretend. Say
 the true thing, which is a good answer anyway:

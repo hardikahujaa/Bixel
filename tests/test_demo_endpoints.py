@@ -8,6 +8,7 @@ front of a judge. Both are tested explicitly.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -15,6 +16,8 @@ from fastapi.testclient import TestClient
 from app.cache import Cache
 from app.main import app
 from backend.matcher.catalog import contains_url
+
+KIT_PATH = Path(__file__).resolve().parents[1] / "student_kit" / "siis_responses.json"
 
 
 @pytest.fixture
@@ -136,6 +139,42 @@ def test_every_scenario_is_directly_submittable(client):
         assert scenario["query"].strip(), scenario["id"]
         assert scenario["siis_response"]["title"].strip(), scenario["id"]
         assert scenario["siis_response"]["content"].strip(), scenario["id"]
+
+
+def test_scenario_documents_keep_the_line_structure_of_the_kit(client):
+    """Regression guard for a bug that silently degraded every demo request.
+
+    This endpoint used to run documents through ``sanitize()``, which collapses all
+    whitespace. That is right for single-line output strings and destructive for a document:
+    the character count barely moves while every newline becomes a space. Since
+    ``build_candidates()`` splits on ``##`` headings and line breaks, row_12's document went
+    from 6 candidate sections to 1, and its catalog deeplink from 7-of-8 uncached runs to
+    0-of-3. The demo page was the only caller, so the graded path never showed it -- which is
+    exactly why it needs a test rather than a comment.
+
+    Asserting line counts match the kit byte-for-byte would be wrong: sanitising row_3, row_11
+    and row_17 removes an address and can empty a line. Line *count* is the invariant that
+    matters to the parser, so that is what is asserted.
+    """
+    kit = {
+        row["id"]: row["siis_response"]["content"]
+        for row in json.loads(KIT_PATH.read_text(encoding="utf-8"))["responses"]
+    }
+    served = {
+        s["id"]: s["siis_response"]["content"]
+        for s in client.get("/demo/scenarios").json()["scenarios"]
+    }
+
+    mismatched = {
+        row_id: (len(raw.splitlines()), len(served[row_id].splitlines()))
+        for row_id, raw in kit.items()
+        if len(raw.splitlines()) != len(served[row_id].splitlines())
+    }
+    assert mismatched == {}, f"line structure lost for {mismatched}"
+
+    multiline = [rid for rid, raw in kit.items() if len(raw.splitlines()) > 1]
+    assert multiline, "kit documents are multi-line; this guard is meaningless otherwise"
+    assert all("\n" in served[rid] for rid in multiline)
 
 
 # -------------------------------------------------------------------- metrics -----
