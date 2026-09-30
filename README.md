@@ -249,3 +249,9 @@ identical descriptions. Both are documented in `docs/KIT_NOTES.md`.
 | **M4** | Query paraphrases, unseen test payloads, demo page, demo video, deck |
 
 Nobody edits anyone else's area. If you need to, say so rather than editing.
+
+### AI Disclosure Form Link - https://drive.google.com/file/d/1BC-zNj1e8zjo8k5H9KuWlKdB0Aw-SW-_/view?usp=sharing
+
+### Video Demo Link - https://youtu.be/D7vwg2REBU0?si=nT52Z4uz3vRhP6AQ
+
+### PPT Link - https://drive.google.com/file/d/1WZZnBZ0FFdLXjL52iFPXV4yPlL2jyG0G/view?usp=sharing
