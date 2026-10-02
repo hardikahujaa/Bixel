@@ -1,6 +1,6 @@
 """Bixel Doctor: complaint in -> grounded step -> catalog entry -> real adb action -> OS-verified result.
 
-    python -m tools.bixel_doctor.doctor "My screen turns off too fast while I read" [--revert]
+    python -m tools.bixel_doctor.doctor "My screen turns off too fast while I read" [--keep]
 
 Pipeline (every stage can say "no" honestly and then nothing is touched):
   1. pick the SIIS-style document closest to the complaint (embedding similarity, with a floor)
@@ -9,7 +9,8 @@ Pipeline (every stage can say "no" honestly and then nothing is touched):
      name appears in the step text; choose by key + polarity, NEVER by top score alone
   4. resolve the value (direction from polarity; timeout from the step's own number)
   5. read before-state, apply, read back, and confirm the OS state changed, not just the stored value
-  6. on any failure, or with --revert, put the original back and read it back again
+  6. put the original back and read it back again -- ALWAYS, unless --keep is passed explicitly
+     (default is no lasting change to the phone; a failed verification is always restored)
 
 Separate from app/, backend/ and the graded API: it only imports the matcher, read-only.
 """
@@ -45,7 +46,8 @@ class DoctorResult:
     catalog_id: str | None = None
     validation_key: str | None = None
     matcher_score: float | None = None
-    polarity: int | None = None
+    polarity: int | None = None          # the catalog entry's own direction (0 = neutral entry)
+    step_polarity: int | None = None     # what the step text asked for (-1 off, +1 on)
     value_applied: str | None = None
     command: str | None = None
     before: dict | None = None
@@ -116,7 +118,7 @@ def resolve_value(ctl: Control, step_text: str) -> tuple[str | None, str]:
 
 
 # ---- the whole thing ------------------------------------------------------------------
-def diagnose_and_fix(complaint: str, *, revert: bool = False, docs_path: Path = DOCS) -> DoctorResult:
+def diagnose_and_fix(complaint: str, *, keep: bool = False, docs_path: Path = DOCS) -> DoctorResult:
     res = DoctorResult(complaint=complaint, verdict="NO_ACTION")
     get_matcher()
     doc, sim = pick_document(complaint, docs_path)
@@ -147,6 +149,7 @@ def diagnose_and_fix(complaint: str, *, revert: bool = False, docs_path: Path = 
     res.step, res.catalog_id = g.heading, cand.catalog_id
     res.validation_key, res.matcher_score = ctl.key, round(cand.score, 3)
     res.polarity, res.value_applied = cand.polarity, value
+    res.step_polarity = resolve_polarity(g.text)
     res.read_only_diagnostics = read_only_diagnostics()
 
     if not adb.device_connected():
@@ -167,7 +170,7 @@ def diagnose_and_fix(complaint: str, *, revert: bool = False, docs_path: Path = 
             res.reason = f"stored value changed but the OS reports {seen!r}, expected {want_os!r}"
     except Exception as e:  # noqa: BLE001 - any failure must lead to a restore, then be reported
         res.verdict, res.reason = "FAILED", f"{type(e).__name__}: {e}"
-    if revert or res.verdict == "FAILED":
+    if not keep or res.verdict == "FAILED":
         try:
             ctl.restore(res.before["stored"], res.before["os"])
             ctl.settle(res.before["os"]) if res.before["os"] else None
@@ -183,6 +186,6 @@ if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     if not args:
         sys.exit(__doc__)
-    r = diagnose_and_fix(" ".join(args), revert="--revert" in sys.argv)
+    r = diagnose_and_fix(" ".join(args), keep="--keep" in sys.argv)
     print(r.to_json())
     sys.exit(0 if r.verdict in ("APPLIED_VERIFIED", "ALREADY_SET", "NO_ACTION") else 2)
