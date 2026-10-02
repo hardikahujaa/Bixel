@@ -13,9 +13,15 @@ read → write → read back → restore → read back cycle with an OS-effect p
 | 1 | **Power saving** (battery-saver profile) | DL-0411/0412 | `global.low_power` and Samsung `psm_*` / `sem_power_mode_*` keys (all seen in the settings dump) | `dumpsys power` low-power flag; watch the refresh-rate and brightness keys it also moves | Highest value, highest risk: it changes many other settings at once. Snapshot everything before and restore all of it, not just one key |
 | 2 | **Reduce animations** | DL-0285/0286 | `global.window_animation_scale`, `transition_animation_scale`, `animator_duration_scale` (1.0 vs 0) | `dumpsys window` animation scales; the strongest "feels faster" demo | Low. Three keys to restore together |
 | 3 | **Always On Display** | DL-0482/0483 | `system.aod_mode` (several `aod_*` keys exist) | `dumpsys power` / display doze state | Low. A battery lever. Beware `aod_*` keys that change just because the screen woke |
-| 4 | **Wi-Fi** | DL-0309/0310 | `cmd wifi set-wifi-enabled enabled\|disabled` | `cmd wifi status` | Medium. Drops the connection until restored. adb over USB is unaffected. Troubleshooting story: "toggle Wi-Fi" |
-| 5 | **Bluetooth** | DL-0042/0043 | `cmd bluetooth_manager enable\|disable`, or `global.bluetooth_on` | `dumpsys bluetooth_manager` state | Medium. Disconnects earbuds and watch. Test with nothing paired and in use |
+| 4 | **Wi-Fi** | DL-0573/0574 | `cmd wifi set-wifi-enabled enabled\|disabled` | `cmd wifi status` | Medium. Drops the connection until restored. adb over USB is unaffected. Troubleshooting story: "toggle Wi-Fi" |
+| 5 | **Bluetooth** | DL-0494/0495 | `cmd bluetooth_manager enable\|disable`, or `global.bluetooth_on` | `dumpsys bluetooth_manager` state | Medium. Disconnects earbuds and watch. Test with nothing paired and in use |
 | 6 | **Do not disturb** | DL-0505/0506 | `global.zen_mode`, or `cmd notification set_dnd` | `global.zen_mode` plus the notification service's reported mode | Low. May silence real calls during the test; restore promptly |
+
+## Correction (2026-10-03)
+An earlier version of this table listed Wi-Fi as DL-0309/0310 and Bluetooth as DL-0042/0043. Those are the **"Wi-Fi scanning"
+and "Bluetooth scanning"** settings (scan while the radio is off); their `message` says "Disable WiFi" / "Enable Bluetooth", which is
+the catalog's known misleading-message trap. The real toggles are DL-0573/0574 (Wi-Fi) and DL-0494/0495 (Bluetooth). Always
+check `validation.key` and `qna_description`, never `message`. The full, extended list is in `docs/laya-implementation.md`.
 
 ## Held back, and why
 - **Adaptive power saving** (DL-0399/0400) and **Eye comfort shield** (DL-0039/0040): good candidates, but the first overlaps with #1 and the second is cosmetic.
