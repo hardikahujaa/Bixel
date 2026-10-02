@@ -1,0 +1,30 @@
+{
+  "_readme": "AUTHORED TEST DOCUMENTS -- written by us, not by Samsung and not part of student_kit/. Same {responses:[{id, original_query, siis_response:{title, content}}]} shape and '##' section style as student_kit/siis_responses.json, so the existing extract_groups() can read them. Each describes a complaint that genuinely leads to one flagship action (adaptive brightness, screen timeout, dark mode) plus distractor sections that must NOT trigger any action. They exist to test tools/bixel_doctor end to end on a real phone; they say nothing about how Samsung's real documents read.",
+  "count": 3,
+  "responses": [
+    {
+      "id": "authored_brightness",
+      "original_query": "The brightness on my Galaxy S24 keeps changing by itself. It gets dim when I walk outside and I can't read the screen.",
+      "siis_response": {
+        "title": "Screen brightness keeps changing on a Galaxy phone or tablet",
+        "content": "Smartphone,Tablet Screen brightness keeps changing on a Galaxy phone or tablet: # Fixing Screen Brightness That Changes by Itself\nIf the screen brightens and dims on its own, the steps below help you keep it steady.\n## Step 1: Restart Your Phone\nPress and hold the Side button and the Volume down button together.\nTap Restart and wait for the phone to turn back on.\n## Step 2: Turn Off Adaptive Brightness\nOpen Settings and tap Display.\nTap the Adaptive brightness switch to turn it off.\nThe screen now stays at the level set with the Brightness slider instead of adjusting to the light around you.\n## Step 3: Check the Sensor Area\nMake sure a case or screen protector is not covering the top of the screen.\nIf the problem continues, contact Samsung Support."
+      }
+    },
+    {
+      "id": "authored_screen_timeout",
+      "original_query": "My screen turns itself off after a few seconds while I am reading and I have to keep touching it to keep it awake.",
+      "siis_response": {
+        "title": "Screen turns off too quickly on a Galaxy phone or tablet",
+        "content": "Smartphone,Tablet Screen turns off too quickly on a Galaxy phone or tablet: # Keeping the Screen On Longer\nIf the display goes dark while you are still using the phone, you can change how long it stays on.\n## Step 1: Check Battery Saving\nOpen Settings, tap Battery, and look at whether a power saving mode is turned on.\nPower saving can shorten how long the screen stays lit.\n## Step 2: Extend the Screen Timeout\nOpen Settings and tap Display.\nTap Screen timeout.\nSelect 5 minutes so the screen stays on while you read.\n## Step 3: Update Device Software\nOpen Settings, tap Software update, then tap Download and install.\nFollow the prompts to finish the update."
+      }
+    },
+    {
+      "id": "authored_dark_mode",
+      "original_query": "Everything on my Galaxy turned black. The menus and apps are all dark and I can't read them in bright sunlight.",
+      "siis_response": {
+        "title": "Screen is too dark to read in sunlight on a Galaxy phone or tablet",
+        "content": "Smartphone,Tablet Screen is too dark to read in sunlight on a Galaxy phone or tablet: # Making the Screen Easier to Read in Bright Light\nDark backgrounds can be hard to read outdoors. The steps below switch the phone back to a light look.\n## Step 1: Clean the Screen\nWipe the screen with a soft, dry microfibre cloth.\nFingerprints and dust make dark screens harder to read.\n## Step 2: Turn Off Dark Mode\nOpen Settings and tap Display.\nTap Light to turn off Dark mode.\nMenus and apps now use light backgrounds with dark text.\n## Step 3: Check for Damage\nLook for cracks or dead pixels on the screen.\nIf you see damage, take the phone to a Samsung service centre."
+      }
+    }
+  ]
+}

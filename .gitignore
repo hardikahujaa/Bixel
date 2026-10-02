@@ -52,3 +52,11 @@ Claude.md
 *.log
 
 # NOTE: results.jsonl is a graded deliverable. It is deliberately NOT ignored.
+
+# --- adb spike: raw dumps off a real phone are personal data. Never commit. ---
+tools/adb_spike/out/
+tools/adb_spike/dumps/
+tools/adb_spike/*.dump
+tools/adb_spike/*.dumpsys
+tools/adb_spike/*_raw*.txt
+*.dumpsys

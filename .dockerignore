@@ -21,3 +21,6 @@ venv
 
 *.md
 !README.md
+
+# Local phone/adb tooling (not part of the graded service). Keeps the deployed image identical to v1.0.0.
+tools
