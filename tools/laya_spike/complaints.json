@@ -1,0 +1,157 @@
+{
+ "_readme": "AUTHORED by us (the same author as the test documents), not real user data. Hard negatives are deliberately near the display topic or the same battery/performance theme. Small (38 rows): treat accuracy as indicative, not measured.",
+ "rows": [
+  {
+   "complaint": "The brightness on my Galaxy keeps changing by itself and I can't read the screen.",
+   "label": "adaptive_brightness"
+  },
+  {
+   "complaint": "Screen gets dimmer on its own whenever I walk indoors.",
+   "label": "adaptive_brightness"
+  },
+  {
+   "complaint": "My display brightness goes up and down automatically and it's annoying.",
+   "label": "adaptive_brightness"
+  },
+  {
+   "complaint": "I set the brightness slider but the phone keeps changing it back.",
+   "label": "adaptive_brightness"
+  },
+  {
+   "complaint": "Why does my screen get darker by itself when I'm reading in bed?",
+   "label": "adaptive_brightness"
+  },
+  {
+   "complaint": "Brightness jumps around when I move between rooms.",
+   "label": "adaptive_brightness"
+  },
+  {
+   "complaint": "The screen dims every time I go outside even though I want it bright.",
+   "label": "adaptive_brightness"
+  },
+  {
+   "complaint": "Auto brightness is making my screen too dark and I want it to stay where I put it.",
+   "label": "adaptive_brightness"
+  },
+  {
+   "complaint": "My screen turns itself off after a few seconds while I am reading.",
+   "label": "screen_timeout"
+  },
+  {
+   "complaint": "The display goes black too quickly and I have to keep tapping it.",
+   "label": "screen_timeout"
+  },
+  {
+   "complaint": "I want my screen to stay on longer when I watch recipes.",
+   "label": "screen_timeout"
+  },
+  {
+   "complaint": "Screen locks after like 15 seconds, way too fast.",
+   "label": "screen_timeout"
+  },
+  {
+   "complaint": "Phone keeps going to sleep while I'm in the middle of reading an article.",
+   "label": "screen_timeout"
+  },
+  {
+   "complaint": "How do I make the screen stay lit for five minutes?",
+   "label": "screen_timeout"
+  },
+  {
+   "complaint": "My screen shuts off while I'm following a map and it drives me crazy.",
+   "label": "screen_timeout"
+  },
+  {
+   "complaint": "The screen sleeps too soon, I'm still looking at it.",
+   "label": "screen_timeout"
+  },
+  {
+   "complaint": "Everything on my phone turned black and I can't read it in sunlight.",
+   "label": "dark_mode"
+  },
+  {
+   "complaint": "The menus and apps are all dark, I want the light theme back.",
+   "label": "dark_mode"
+  },
+  {
+   "complaint": "Dark mode makes the text hard to read outdoors.",
+   "label": "dark_mode"
+  },
+  {
+   "complaint": "I want to switch off the dark theme on my phone.",
+   "label": "dark_mode"
+  },
+  {
+   "complaint": "All my apps have black backgrounds and my eyes hurt, turn it back to white.",
+   "label": "dark_mode"
+  },
+  {
+   "complaint": "Why is my whole interface dark all of a sudden?",
+   "label": "dark_mode"
+  },
+  {
+   "complaint": "I can't see anything in bright light because the screen is so dark and black.",
+   "label": "dark_mode"
+  },
+  {
+   "complaint": "Please make my settings and apps light instead of black.",
+   "label": "dark_mode"
+  },
+  {
+   "complaint": "My cat is sick.",
+   "label": "none"
+  },
+  {
+   "complaint": "My phone speaker makes no sound during calls.",
+   "label": "none"
+  },
+  {
+   "complaint": "My battery drains by lunchtime.",
+   "label": "none"
+  },
+  {
+   "complaint": "Wi-Fi keeps disconnecting every few minutes.",
+   "label": "none"
+  },
+  {
+   "complaint": "The camera photos are blurry.",
+   "label": "none"
+  },
+  {
+   "complaint": "I cracked my screen when I dropped it.",
+   "label": "none"
+  },
+  {
+   "complaint": "An app keeps crashing when I open it.",
+   "label": "none"
+  },
+  {
+   "complaint": "The touchscreen doesn't respond when I swipe.",
+   "label": "none"
+  },
+  {
+   "complaint": "My phone is overheating while charging.",
+   "label": "none"
+  },
+  {
+   "complaint": "I can't connect my Bluetooth earbuds.",
+   "label": "none"
+  },
+  {
+   "complaint": "The screen flickers when I scroll.",
+   "label": "none"
+  },
+  {
+   "complaint": "Text messages are not sending.",
+   "label": "none"
+  },
+  {
+   "complaint": "My phone is very slow and games lag.",
+   "label": "none"
+  },
+  {
+   "complaint": "How do I transfer photos to my new phone?",
+   "label": "none"
+  }
+ ]
+}
