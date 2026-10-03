@@ -99,12 +99,29 @@ public documentation and the package metadata; latency below was measured on our
 - Laya is ≈ 17× slower than the selector on CPU; memory not measured; first call ≈ 3 s.
 - The planned fix is an independent held-out set (≥ 150 complaints, ≥ 2 authors) in `laya-implementation.md` §8.
 
+### 4.4 Round 2: thirteen more settings on the real phone (2026-10-04)
+
+Full table and caveats: `tools/adb_spike/FINDINGS_2.md`. Same protocol (read, write, read back, OS-effect probe, restore, whole-database diff).
+
+| Result | Settings |
+|---|---|
+| **Effect observed** (7) | Do not disturb (via `cmd notification set_dnd`), Extra dim, Sound mode (via `cmd audio`), Wi-Fi, Mobile data, Battery Saver, Bluetooth |
+| Stored value only (5) | Reduce animations, Always On Display, Eye comfort shield, Color inversion, Touch and hold delay |
+| Effect unknown (1) | Adaptive power saving |
+| Not reachable over adb | Samsung's Power saving bundle, Mobile hotspot, Quick Share mode |
+
+Together with round 1 that is **10 effect-verified settings**. Findings worth showing:
+- **Samsung's Power saving is a 27-key bundle** (AOD off, refresh rate to Standard, 30 s timeout, brightness factor 0.9, network saving). adb can only switch Android's plain Battery Saver, so the bundle cannot be reproduced; it is a natural example of a "profile".
+- **Writing a settings key is not acting on it**: Do not disturb behaves like dark mode, because Android reverts a direct write to `zen_mode` and only the `cmd` path works.
+- **Bluetooth is not a harmless toggle.** With earbuds connected, switching it off and on disconnected them and triggered Samsung Modes changes to ringer mode and volumes. The radio restore was confirmed but those changes were not ours to undo, so a Doctor action for Bluetooth needs a "nothing connected" precondition.
+- Hotspot and Quick Share modes are not settings keys, so they stay out of scope for the proof of concept.
+
 ## 5. Proven versus proposed
 
 | Claim | Status |
 |---|---|
 | A real phone's settings can be read, changed and restored over adb | **Proven** (5 settings) |
-| The OS actually changed, not just a stored value | **Proven for 3** (brightness, timeout, dark mode); **not proven for 2** |
+| The OS actually changed, not just a stored value | **Proven for 10 settings** (round 1: brightness, timeout, dark mode; round 2: DND, Extra dim, Sound mode, Wi-Fi, Mobile data, Battery Saver, Bluetooth); stored-only for 7 others |
 | A complaint can be routed to the right verified action | **Proven for 3 scripted complaints**; the Laya comparison is indicative only |
 | A System-1 model abstains safely on off-topic complaints | **Indicated** (0 of 14 false actions on 38 rows). Its confidence score does not cleanly separate right from wrong answers, so a threshold is unproven |
 | Profiles (default / preferred / performance / battery saver) | **Designed, not built** |
@@ -116,10 +133,8 @@ public documentation and the package metadata; latency below was measured on our
 
 ## 6. Roadmap
 
-**Now (this branch, ≈ 3–5 days):** reconnect and pre-flight; discover and test **12 more adb-accessible settings** (reduce
-animations, Always On Display, Power saving, Adaptive power saving, Do not disturb, Wi-Fi, Bluetooth, Eye comfort shield,
-Extra dim, Color inversion, Touch and hold delay, Sound mode), each through the same read → write → read-back → OS-check →
-restore protocol; build the state/config/profile files and the Laya wrapper; add the validator and the one-page query UI; run the
+**Now (this branch, ≈ 3–5 days):** *round 2 of settings testing is done* (13 settings, see 4.4). Remaining: run the matcher mapping for them,
+build the registry with the effect-verified ones; build the state/config/profile files and the Laya wrapper; add the validator and the one-page query UI; run the
 independent evaluation. Details, risks and acceptance criteria: `docs/laya-implementation.md`.
 
 **Next (after the hackathon):** measure real performance effects (frame-time and jank statistics before/after a profile);

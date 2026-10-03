@@ -154,6 +154,11 @@ ensemble (use Laya alone), never the verification step.
 
 ## 6. Testing ≥ 10 more settings over adb
 
+> **Status 2026-10-04: executed.** 13 settings cycled, 7 with an OS-observed effect, 5 stored-only, 1 unknown; plus 3 discovered
+> by flip and not actionable. Results, side effects and the tier recommendation are in `tools/adb_spike/FINDINGS_2.md`. Not yet done: matcher
+> mapping (protocol step 5) and regression tests for the new entries. Notable deviations from this section's hypotheses: Wi-Fi/Bluetooth/Mobile data
+> needed `cmd`/`svc` paths, DND needed `cmd notification set_dnd`, Power saving cannot be reproduced by adb, and Bluetooth has real side effects.
+
 All candidates have a real catalog Enable/Disable (or value) entry, are reversible, and expose some OS state worth
 probing. **Every key and probe below is a hypothesis until Phase 1 confirms it.** Catalog ids were checked against
 `validation.key` and `qna_description` on 2026-10-03.
