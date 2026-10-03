@@ -1,6 +1,8 @@
 # Laya System-1 tuner — implementation plan
 
-Branch: `feat/laya-system1` (cut from `feat/impact-extension`). Written 2026-10-03.
+Written 2026-10-03. The spike work described in section 2 was merged to `main` on 2026-10-03
+(from `feat/impact-extension` and `feat/laya-system1`); the phases in section 5 have not started and
+belong on a new feature branch.
 Status: **plan only.** Nothing in this document beyond the "What exists today" section has been built or verified.
 
 ## 1. Goal and non-goals
@@ -18,7 +20,7 @@ inside the device; that is roadmap, not part of this build.
   the Render deployment. All code lives under `tools/`.
 - Claims of better battery life or performance, unless Phase 5's measurement actually shows it.
 
-## 2. What exists today (verified, on `feat/impact-extension`)
+## 2. What exists today (verified, on `main`)
 
 | Piece | Where | State |
 |---|---|---|
@@ -28,6 +30,7 @@ inside the device; that is roadmap, not part of this build.
 | Read → write → read-back → restore → read-back cycle | `tools/adb_spike/toggle_test.py` | 5 settings, 3 effect-verified |
 | Orchestrator: complaint → matcher → catalog entry → adb → OS-verified result | `tools/bixel_doctor/` | 3 flagship controls; reverts by default |
 | Pre-flight (connected, authorised, write cycle) | `tools/bixel_doctor/preflight.py` | working; Auto Blocker can't be read over adb |
+| Offline regression tests for the spike scripts | `tools/tests/test_spike_scripts.py` | 12 tests; pin the bugs found in the pre-merge audit |
 | Laya vs current selector comparison | `tools/laya_spike/` | indicative result only (38 self-written complaints) |
 
 Verified controls today: **adaptive brightness** (`system.screen_brightness_mode`, OS probe `mUseAutoBrightness`),

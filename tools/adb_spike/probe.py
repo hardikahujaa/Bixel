@@ -7,8 +7,12 @@ from __future__ import annotations
 import json
 import re
 import sys
+from pathlib import Path
 
-sys.path.insert(0, __file__.rsplit("/", 1)[0])
+# Path(), not __file__.rsplit("/"): on Windows __file__ has no forward slash, so rsplit
+# returned the whole file path and `import adb` failed for every caller but a direct
+# `python probe.py` (which gets this directory on sys.path anyway).
+sys.path.insert(0, str(Path(__file__).parent))
 import adb  # noqa: E402
 
 CHARGE_STATUS = {1: "unknown", 2: "charging", 3: "discharging", 4: "not_charging", 5: "full"}
@@ -30,9 +34,12 @@ def battery() -> dict:
         if m:
             kv[m.group(1).strip()] = m.group(2).strip()
     status = _int(kv.get("status"))
+    temp = _int(kv.get("temperature"))
     return {
         "level_percent": _int(kv.get("level")),
-        "temperature_celsius": (_int(kv.get("temperature")) or 0) / 10,
+        # Tenths of a degree. None, not 0.0, when the field is unreadable: a missing sensor
+        # must not be reported as a phone at freezing point.
+        "temperature_celsius": temp / 10 if temp is not None else None,
         "charging_state": CHARGE_STATUS.get(status, str(status)),
         "plugged_via": [k.split()[0].lower() for k in ("AC powered", "USB powered", "Wireless powered")
                         if kv.get(k) == "true"] or ["none"],
@@ -83,10 +90,7 @@ def top_cpu_apps(n: int = 5) -> list[dict]:
     return sorted(out, key=lambda r: -r["cpu_percent"])[:n]
 
 
-def main() -> int:
-    if not adb.device_connected():
-        print(json.dumps({"error": "no authorised device — check cable and USB-debugging prompt"}))
-        return 1
+def collect() -> dict:
     night = _int(adb.settings_get("secure", "ui_night_mode"))
     brightness_mode = _int(adb.settings_get("system", "screen_brightness_mode"))
     timeout_ms = _int(adb.settings_get("system", "screen_off_timeout"))
@@ -110,7 +114,19 @@ def main() -> int:
         "top_battery_apps": top_battery_apps(),
         "top_cpu_processes_now": top_cpu_apps(),
     }
-    print(json.dumps(result, indent=2))
+    return result
+
+
+def main() -> int:
+    try:
+        if not adb.device_connected():
+            print(json.dumps({"error": "no authorised device - check cable and USB-debugging prompt"}))
+            return 1
+        print(json.dumps(collect(), indent=2))
+    except adb.AdbError as e:
+        # The whole point of this script is a readable report; a traceback is not one.
+        print(json.dumps({"error": str(e)}))
+        return 1
     return 0
 
 

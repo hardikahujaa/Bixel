@@ -1,6 +1,6 @@
 # Bixel Doctor + Laya — presentation brief
 
-Branch: `feat/laya-system1`. Written 2026-10-03. Every number below was measured in this project; where a number is
+Branch: integrated onto `main` on 2026-10-03 (the spike work came from `feat/impact-extension` and `feat/laya-system1`; `tools/` is excluded from the deployed image). Written 2026-10-03. Every number below was measured in this project; where a number is
 weak, the weakness is stated next to it. Implementation details are in `docs/laya-implementation.md`.
 
 ## 1. One sentence
@@ -68,7 +68,7 @@ Three authored SIIS-style documents (labelled as ours), each with distractor ste
   return "Extra brightness" (0.811) and "Adaptive color tone" (0.790) right behind "Adaptive brightness" (0.831); a test
   forces "Extra brightness" to outscore the right entry and still gets DL-0020.
 - Default mode **reverts after verification**; keeping a change needs an explicit `--keep`.
-- Tests: **24 offline pass, 3 live (real phone) pass**; the existing repo suite (**488 tests**) still passes.
+- Tests: **41 offline pass, 3 live (real phone) pass**; the pre-existing repo suite (**488 passed, 28 skipped**) is unchanged. Whole repo: **529 passed, 31 skipped**.
 - A pre-flight script checks the phone is connected and authorised, and runs a write/effect/restore cycle on all three
   controls. **It cannot read Auto Blocker** (no settings key exposes it); that item is a manual eyeball check.
 
@@ -97,6 +97,9 @@ public documentation and the package metadata; latency below was measured on our
   and its floor was tuned on some of these same complaints.
 - 38 rows: 34 vs 28 correct is a modest gap, not a significant one.
 - Laya is ≈ 17× slower than the selector on CPU; memory not measured; first call ≈ 3 s.
+- **Both latencies must come from one machine.** Re-running `baseline` on a second laptop gave a selector median of
+  48.9 ms, not 20 ms, which would make the ratio ≈ 7× rather than 17×. Re-measure both on the machine that
+  runs the demo and quote that pair. (The accuracy columns reproduced exactly: 0.737, 1 of 14, 8 of 24, 1 wrong class.)
 - The planned fix is an independent held-out set (≥ 150 complaints, ≥ 2 authors) in `laya-implementation.md` §8.
 
 ## 5. Proven versus proposed
@@ -167,15 +170,21 @@ normal app, which cannot run `dumpsys` or change these settings without system-l
 
 ## 10. Reproduce
 
+Run every command from the repo root. `adb` is found via the `ADB` environment variable, then
+`PATH`, then `~/platform-tools/adb` (`adb.exe` on Windows).
+
 ```
 # read-only probe of the phone
-python tools/adb_spike/probe.py
+python -m tools.adb_spike.probe
 # pre-flight and the Doctor (revert by default)
-.venv/bin/python -m tools.bixel_doctor.preflight
-.venv/bin/python -m tools.bixel_doctor.doctor "My screen turns itself off after a few seconds while I am reading."
-# offline tests; live tests drive the phone and revert
-.venv/bin/python -m pytest tools/bixel_doctor -q
-BIXEL_LIVE=1 .venv/bin/python -m pytest tools/bixel_doctor/tests/test_doctor_live.py -q
-# Laya vs selector comparison (Laya runs in its own venv with torch; see laya-implementation.md §3.3)
-.venv/bin/python -m tools.laya_spike.baseline && <laya-venv>/bin/python tools/laya_spike/laya_run.py && python tools/laya_spike/compare.py
+python -m tools.bixel_doctor.preflight
+python -m tools.bixel_doctor.doctor "My screen turns itself off after a few seconds while I am reading."
+# offline tests (no phone); live tests drive the phone and revert
+python -m pytest tools -q
+BIXEL_LIVE=1 python -m pytest tools/bixel_doctor/tests/test_doctor_live.py -q
+# Laya vs selector comparison, in order: baseline and laya_run write out/, compare reads it.
+# Laya needs its own venv with torch -- see laya-implementation.md section 3.3.
+python -m tools.laya_spike.baseline
+<laya-venv>/python tools/laya_spike/laya_run.py
+python -m tools.laya_spike.compare
 ```

@@ -108,8 +108,12 @@ def main() -> int:
             except Exception as e:  # noqa: BLE001
                 results.append((name, WARN, f"check failed: {type(e).__name__}: {e}"))
         results.append(("Auto Blocker off", MAN, "cannot be read over adb: open Settings > Security and privacy > Auto Blocker and confirm it is OFF"))
-        values = pick_values()
-        for key, ctl in CONTROLS.items():
+        try:
+            values = pick_values()
+        except Exception as e:  # noqa: BLE001 - a cable drop here must not end in a traceback
+            results.append(("read current values", BAD, f"{type(e).__name__}: {e}"))
+            values = {}
+        for key, ctl in (CONTROLS.items() if values else ()):
             try:
                 results.append((f"{ctl.label}: read/write/OS-effect/restore", *cycle(ctl, values[key])))
             except Exception as e:  # noqa: BLE001
@@ -118,7 +122,7 @@ def main() -> int:
     for name, st, m in results:
         print(f"{st:6} {name:<{width}}  {m}")
     ready = all(st != BAD for _, st, _ in results)
-    print("\nREADY to film" if ready else "\nNOT READY — fix the FAIL lines above")
+    print("\nREADY to film" if ready else "\nNOT READY - fix the FAIL lines above")
     if ready and any(st == MAN for _, st, _ in results):
         print("(MANUAL items are unconfirmed by the script: check them by eye.)")
     return 0 if ready else 1

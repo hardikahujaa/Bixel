@@ -74,6 +74,8 @@ def run_cycle(s: Spec) -> dict:
         r.update(verdict="SKIP", note="test value equals current value; nothing to prove")
         return r
     before_effect = s.effect_probe() if s.effect_probe else None
+    after_effect = None
+    restore_error = None
     try:
         put(s.test_value)
         time.sleep(1.0)
@@ -85,11 +87,22 @@ def run_cycle(s: Spec) -> dict:
             if after_effect == before_effect:
                 r["note"] = "key changed but Android did not apply it (no effect observed)"
     finally:
-        put(original)
-        time.sleep(1.0)
-        r["after_restore"] = get()
-        r["restore_confirmed"] = r["after_restore"] == original
-    effect_ok = (not s.effect_probe) or (r["effect_observed"] and before_effect != r["effect_observed"].split(" -> ")[1])
+        try:
+            put(original)
+            time.sleep(1.0)
+            r["after_restore"] = get()
+            r["restore_confirmed"] = r["after_restore"] == original
+        except Exception as e:  # noqa: BLE001 - never leave the phone changed without saying so
+            restore_error = e
+    if restore_error is not None:
+        r.update(verdict="FAIL", note=f"RESTORE FAILED ({type(restore_error).__name__}: {restore_error}): "
+                                      f"{s.ns}.{s.key} may still be {s.test_value!r}. Set it back by hand.")
+        return r
+    # Both probe reads must have succeeded AND differ. The old form compared before_effect
+    # against the stringified pair, so an unreadable probe ("None -> None") scored as a
+    # verified effect -- which would have overstated what the spike proved.
+    effect_ok = True if not s.effect_probe else (
+        before_effect is not None and after_effect is not None and after_effect != before_effect)
     ok = bool(r["writable"] and r["restore_confirmed"] and effect_ok)
     r["verdict"] = ("XFAIL" if s.expect_fail else "PASS") if (ok != s.expect_fail) else "FAIL"
     r["effect_verified"] = bool(s.effect_probe and effect_ok)
@@ -97,10 +110,14 @@ def run_cycle(s: Spec) -> dict:
 
 
 def main() -> int:
-    if not adb.device_connected():
-        print("no authorised device")
+    try:
+        if not adb.device_connected():
+            print("no authorised device")
+            return 1
+        results = [run_cycle(s) for s in SPECS]
+    except adb.AdbError as e:
+        print(f"adb error: {e}")
         return 1
-    results = [run_cycle(s) for s in SPECS]
     if "--json" in sys.argv:
         print(json.dumps(results, indent=2))
     else:

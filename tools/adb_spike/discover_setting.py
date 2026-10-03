@@ -8,7 +8,7 @@ Workflow (the human flips ONE toggle between `after` and `before`):
     python discover_setting.py diff    <label>     # prints only the keys that changed because of the flip
 
 Snapshots are raw personal data from a real phone: they go to tools/adb_spike/dumps/ (gitignored)
-and are never printed in full — `diff` shows only the changed keys.
+and are never printed in full - `diff` shows only the changed keys.
 """
 from __future__ import annotations
 
@@ -65,7 +65,7 @@ def cmd_diff(label: str) -> None:
     diff = {k: v for k, v in changed(_load(f"{label}.before"), _load(f"{label}.after")).items()
             if k not in noise}
     if not diff:
-        print("no key changed — the toggle may live outside `settings` (e.g. a Samsung provider/service)")
+        print("no key changed - the toggle may live outside `settings` (e.g. a Samsung provider/service)")
     for k, (old, new) in sorted(diff.items()):
         print(f"{k}: {old!r} -> {new!r}")
 

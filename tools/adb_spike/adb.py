@@ -10,10 +10,28 @@ from __future__ import annotations
 
 import os
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
-ADB = os.environ.get("ADB", str(Path.home() / "platform-tools" / "adb"))
+
+def _default_adb() -> str:
+    """An explicit ADB, else the one on PATH, else the usual platform-tools location.
+
+    The platform-tools fallback needs the platform's own suffix: on Windows the binary is
+    ``adb.exe``, and handing subprocess a suffix-less path raises FileNotFoundError from
+    inside subprocess rather than finding it.
+    """
+    explicit = os.environ.get("ADB")
+    if explicit:
+        return explicit
+    on_path = shutil.which("adb")
+    if on_path:
+        return on_path
+    return str(Path.home() / "platform-tools" / ("adb.exe" if os.name == "nt" else "adb"))
+
+
+ADB = _default_adb()
 NAMESPACES = ("system", "secure", "global")
 
 # Words that must never appear in a command we send to the phone.
@@ -34,6 +52,13 @@ def _run(args: list[str], timeout: int = 60) -> str:
         p = subprocess.run([ADB, *args], capture_output=True, text=True, timeout=timeout)
     except subprocess.TimeoutExpired as e:
         raise AdbError(f"adb timed out: {args[:3]}") from e
+    except OSError as e:
+        # A missing or mis-pathed binary must read as an adb problem. Every caller already
+        # handles AdbError; none of them handles a bare FileNotFoundError from subprocess.
+        raise AdbError(
+            f"cannot run adb at {ADB!r}: {e}. Install platform-tools, or set the ADB "
+            "environment variable to the adb binary."
+        ) from e
     if p.returncode != 0:
         raise AdbError(f"adb {' '.join(args[:3])} failed: {p.stderr.strip() or p.stdout.strip()}")
     return p.stdout
