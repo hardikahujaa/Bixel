@@ -203,9 +203,11 @@ backend/extract/      Gemini pipeline, grounding, fallbacks    (M1)
 scripts/              gate harness and the measurement scripts (M3/M2)
 student_kit/          Samsung's provided material, unmodified
 testdata/             8 invented SIIS payloads, for A4          (M4)
-docs/                 PLAN.md, KIT_NOTES.md, DEMO_SCRIPT.md
+docs/                 PLAN.md, KIT_NOTES.md, DEMO_SCRIPT.md,
+                      laya-implementation.md, Presentation.md, TODO.md (post-extension)
 fixtures/             golden responses + the paraphrase file   (M2/M4)
 tests/                service, pipeline and demo-endpoint tests
+tools/                Bixel Doctor + adb/Laya spikes -- post-extension, not in the Docker image
 .github/workflows/    keep-alive ping, doubling as a G2 canary
 results.jsonl         the graded submission artefact           (M3)
 AI_USAGE_DISCLOSURE.md  what AI produced, specifically         (M1)
@@ -238,6 +240,61 @@ Two things worth knowing before trusting the catalog: its `message` field is oft
 misleading (`DL-0022` reads "View Reset Options" but means auto-reset after failed
 unlock attempts), and 111 settings exist as both an Enable and a Disable entry with
 identical descriptions. Both are documented in `docs/KIT_NOTES.md`.
+
+## Post-extension work: Bixel Doctor (not part of the graded API)
+
+The hackathon deadline was extended a few days past 30 September. Everything in this
+section was built in that extra window, lives entirely under `tools/` and `docs/`, and is
+**excluded from the Docker image** (`.dockerignore`). The graded service above — `app/`,
+`backend/`, `student_kit/`, `scripts/`, `tests/`, `results.jsonl`, the Dockerfile — is
+**byte-identical** to the original submission; none of it was touched.
+
+**What it is.** The graded API takes a complaint plus a pre-supplied SIIS document and
+returns text — a plan. Bixel Doctor goes one step further on a real phone: complaint in, it
+picks the matching document itself, matches a step to a catalog entry **by the entry's own
+`validation.key`, never by top matcher score**, performs the change over `adb`, then reads
+the change back from the operating system itself (`dumpsys`) — not just the stored settings
+value — and restores the original by default. Keeping a change requires an explicit
+`--keep` flag.
+
+```
+python -m tools.bixel_doctor.preflight
+python -m tools.bixel_doctor.doctor "My screen turns itself off after a few seconds while I am reading."
+```
+
+**What was verified, on a real Galaxy S24 (SM-S921B, Android 16, One UI 8.5), over two
+rounds of testing:**
+
+| | Count |
+|---|---|
+| Settings cycled (read → write → read back → restore) | **18** |
+| Effect-verified against the OS itself, not just the stored value | **10** |
+| Stored-only (value changes, no OS-visible effect found — left read-only, not acted on) | **7** |
+| Unknown effect (no usable probe found; not acted on) | **1** |
+
+The one finding worth knowing before trusting any of this: **writing a settings key is not
+the same as changing it.** Writing Android's dark-mode key and the Do Not Disturb key both
+changed the stored number while Android silently ignored the write — caught only because the
+OS state was checked separately, and kept as `XFAIL` evidence rows rather than deleted.
+Full detail, including which 7 settings are stored-only and why: `tools/adb_spike/FINDINGS.md`
+and `tools/adb_spike/FINDINGS_2.md`.
+
+**Also spiked:** a comparison between the existing embedding matcher and a System-1 decision
+model ("Laya") for picking which setting to act on — **indicative only**, 38 complaints
+written by one author, not a measured result. See `docs/laya-implementation.md` and
+`docs/Presentation.md` for the full comparison, the honest limitations, and what is proposed
+versus what is actually built (a distilled on-device model, profiles, and a query UI are
+**proposed, not built**).
+
+**Tests.** `tools/tests/` and `tools/bixel_doctor/tests/` add offline regression coverage
+(no phone needed) plus three opt-in live tests that drive the real device:
+
+```
+pytest tools -q                                                    # offline, no phone
+BIXEL_LIVE=1 pytest tools/bixel_doctor/tests/test_doctor_live.py   # live, needs adb + a connected Galaxy phone
+```
+
+Whole-repo suite, including all of the above: **537 passed, 31 skipped**.
 
 ## Who owns what
 
