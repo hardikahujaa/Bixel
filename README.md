@@ -307,8 +307,10 @@ Whole-repo suite, including all of the above: **537 passed, 31 skipped**.
 
 Nobody edits anyone else's area. If you need to, say so rather than editing.
 
+### PPT Link - https://docs.google.com/presentation/d/1nPQ8tkxlfYQsSbgoh0ue9XonSG2TCmEp/edit?usp=sharing&ouid=107182500536899057239&rtpof=true&sd=true
+
 ### Video Demo Link - https://youtu.be/D7vwg2REBU0?si=nT52Z4uz3vRhP6AQ
 
-### PPT Link - https://docs.google.com/presentation/d/1doQfXs4gan1LfniNeagBpx_Vg5I3oAaP/edit?usp=sharing&ouid=107182500536899057239&rtpof=true&sd=true
+
 ### AI Disclosure Form Link - https://docs.google.com/document/d/1S_jLZE4l_JMB3gUoO0y4D24FnU6LD8fe/edit?usp=sharing&ouid=107182500536899057239&rtpof=true&sd=true
 
