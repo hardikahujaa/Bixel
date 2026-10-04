@@ -53,6 +53,7 @@ class Spec:
     treat_unset_as: dict = field(default_factory=dict)   # {"ns.key": "0"}: unset == this default
     expected_negative: bool = False                    # evidence row: the OS is expected to ignore/revert this write
     connection_keys: str = ""                          # regex of keys owned by a connected device, not by us (reported, never hidden)
+    settle_s: float = 2.5                              # radios need longer than settings keys; see mobiledata
 
 
 SPECS = {s.id: s for s in [
@@ -106,7 +107,7 @@ SPECS = {s.id: s for s in [
          custom_put=lambda v: adb.shell("svc data " + ("enable" if v == "1" else "disable")),
          test_value="0",
          probe=lambda: _m(r"mDataConnectionState=(\d)", adb.shell("dumpsys telephony.registry", timeout=60)),
-         expect=lambda b, a: b == "2" and a == "0"),
+         expect=lambda b, a: b == "2" and a == "0", settle_s=9.0),
     Spec("wifi", "Wi-Fi", "DL-0573/0574", [],
          custom_get=lambda: _m(r"Wifi is (\w+)", adb.shell("cmd wifi status", timeout=30)),
          custom_put=lambda v: adb.shell(f"cmd wifi set-wifi-enabled {v}"), test_value="enabled",
@@ -128,7 +129,7 @@ def run(spec: Spec) -> dict:
             r["readable"] = originals["custom"] is not None
             tv = spec.test_value(originals["custom"]) if callable(spec.test_value) else spec.test_value
             spec.custom_put(tv); wrote = True
-            time.sleep(2.5)
+            time.sleep(spec.settle_s)
             r["after_write"] = spec.custom_get()
             r["writable"] = r["after_write"] not in (None, originals["custom"])
         else:
@@ -141,7 +142,7 @@ def run(spec: Spec) -> dict:
                 r.update(verdict="SKIP", note="a key is unset and has no declared default; cannot restore without deleting"); return r
             for ns, key, val in spec.writes:
                 adb.settings_put(ns, key, val); wrote = True
-            time.sleep(2.5)
+            time.sleep(spec.settle_s)
             r["after_write"] = {f"{ns}.{key}": adb.settings_get(ns, key) for ns, key, _ in spec.writes}
             r["writable"] = all(r["after_write"][f"{ns}.{key}"] == val for ns, key, val in spec.writes)
         probe_after = spec.probe() if spec.probe else None
@@ -161,7 +162,7 @@ def run(spec: Spec) -> dict:
                         adb.settings_put(ns, key, originals[f"{ns}.{key}"])
             except Exception as e:  # noqa: BLE001
                 r["restore_error"] = f"{type(e).__name__}: {e}"
-            time.sleep(2.5)
+            time.sleep(spec.settle_s)
     s_after = snap()
     r["side_effect_keys"] = sorted(k for k in moved(s2, s_applied) - noise
                                    if k not in {f"{ns}.{key}" for ns, key, _ in spec.writes})[:20]

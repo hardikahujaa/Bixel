@@ -49,7 +49,12 @@ class AdbError(RuntimeError):
 
 def _run(args: list[str], timeout: int = 60) -> str:
     try:
-        p = subprocess.run([ADB, *args], capture_output=True, text=True, timeout=timeout)
+        # encoding/errors, not bare text=True: text=True decodes with the locale encoding,
+        # which is cp1252 on this machine, and `dumpsys bluetooth_manager` emits bytes that
+        # are not valid cp1252. That killed subprocess's reader thread and shell() returned
+        # None, so a caller saw "expected string, got NoneType" instead of a dumpsys dump.
+        p = subprocess.run([ADB, *args], capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=timeout)
     except subprocess.TimeoutExpired as e:
         raise AdbError(f"adb timed out: {args[:3]}") from e
     except OSError as e:

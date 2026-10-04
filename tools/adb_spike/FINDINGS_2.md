@@ -73,6 +73,35 @@ smoothness and touch sensitivity stored-only) that is **10 effect-verified setti
 | Read-only diagnostics | Reduce animations, AOD, Eye comfort, Inversion, Touch and hold, Adaptive power saving, Motion smoothness, Touch sensitivity | no proof Android acted |
 | Out of reach over adb | Samsung Power saving bundle, Mobile hotspot, Quick Share mode | not settings keys or no safe write path |
 
+## Re-run on 2026-10-04 under the corrected verdict logic
+
+The harness verdict logic was fixed after this round was recorded (`XFAIL` was unreachable; notes overwrote each other).
+`settings_matrix.py` was re-run end to end on the same phone to check this table still holds. **It does**, with two
+corrections and one new defect found and fixed.
+
+* **Both key findings reproduce.** `dnd_key` now reports `XFAIL` as this document always claimed (it reported
+  `NO-EFFECT` before the fix). All five stored-only rows, Extra dim, Sound mode, Wi-Fi, Bluetooth and DND reproduce
+  exactly. Adaptive power saving is still `NOT-OBSERVED` (probe `2 -> 2`).
+* **Mobile data: the probe needed longer, not a different verdict.** At a 2.5 s settle the probe caught
+  `mDataConnectionState=4` (DISCONNECTING) and scored `NOT-OBSERVED`. Re-run with a 9 s settle it reads `2 -> 0` and
+  PASSes. The effect is real; the wait was too short. `Spec.settle_s` is now per-setting and mobile data uses 9 s.
+  **Any radio-backed setting added later needs the same treatment.**
+* **Battery Saver: effect confirmed, cycle not clean.** The probe still shows `OFF -> ON`, and `global.low_power` is
+  restored and confirmed. But the whole-namespace check reports `system.aod_show_state` left at a different value, so
+  the row is now `FAIL` rather than `PASS, partial`. That key is runtime bookkeeping for whether AOD is currently
+  rendering, not a Settings menu item; the user-facing `system.aod_mode` was verified back at `1`. Sampled on its own
+  it was stable, so this is not the self-moving noise the filter catches. **Treat Battery Saver as effect-observed but
+  not cleanly reversible until that key is understood**, and do not put it in tier 1.
+* **A real bug in `adb.py`, found here and fixed.** `subprocess(text=True)` decodes with the Windows locale (cp1252),
+  and `dumpsys bluetooth_manager` emits bytes that are not valid cp1252. The decode threw inside subprocess's reader
+  thread and `shell()` returned `None`, so the Bluetooth row would have failed with
+  "expected string, got NoneType" rather than a result. Now decoded as UTF-8 with replacement; the dump is 2.8 MB
+  with 210 replaced bytes and parses fine.
+
+**Counts after the re-run.** Unchanged where it matters: 13 settings cycled, **7 with an OS-observed effect**, 5
+stored-only, 1 unknown; **10 effect-verified in total** across both rounds. The single change to the record is that
+Battery Saver's cycle is no longer clean.
+
 ## Safety record
 
 Every write was restored in a `finally` and verified by whole-namespace diff, and 15 keys were re-checked at the end. Changes made *to the phone by the user's hand*
