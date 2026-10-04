@@ -13,7 +13,7 @@ Settings deeplink taken from Samsung's provided catalog.
 demo page. Open it in a browser and the system demonstrates itself; there is no separate
 front end deployed anywhere.
 
-Submission deadline **30 September 2026**. Everything below is built, tested and running in
+Submission deadline **4th October 2026**. Everything below is built, tested and running in
 production — there are no stubs or placeholders left in the request path.
 
 | Piece | State |
