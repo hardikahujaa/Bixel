@@ -179,15 +179,23 @@ def run(spec: Spec) -> dict:
     r["namespace_identical_after_restore"] = not leftover
     ok = r.get("writable") and r["restore_confirmed"] and not leftover and "restore_error" not in r
     r["verdict"] = ("PASS-CAVEAT" if conn else "PASS") if ok else "FAIL"
+    # NO-EFFECT first, then expected_negative. The other order never fired: an evidence row
+    # whose cycle is clean scores PASS, which matched neither branch of the old if/elif, so
+    # dnd_key reported NO-EFFECT while FINDINGS_2.md recorded it as XFAIL.
+    if ok and r.get("effect") == "NOT-OBSERVED":
+        r["verdict"] = "NO-EFFECT"   # clean cycle, but Android did not apply the write (or the probe is wrong): do not act on it
+    notes = []
     if spec.expected_negative and r["verdict"] in ("FAIL", "NO-EFFECT"):
         r["verdict"] = "XFAIL"
-        r["note"] = "expected: Android ignores or reverts a direct write to this key; use the cmd path (kept as evidence)"
-    elif ok and r.get("effect") == "NOT-OBSERVED":
-        r["verdict"] = "NO-EFFECT"   # cycle is clean, but Android did not apply the write (or the probe is wrong): do not act on it
+        notes.append("expected: Android ignores or reverts a direct write to this key; use the cmd path (kept as evidence)")
     if conn:
-        r["note"] = "radio restored and verified; keys owned by the connected device and by Samsung Modes (ringer mode, volumes) changed when the earbuds disconnected and are not ours to rewrite; reconnect the device and check the ringer mode"
-    if spec.treat_unset_as:
-        r["note"] = "key was unset before; restored to its documented default value, so it now exists as an explicit value"
+        notes.append("radio restored and verified; keys owned by the connected device and by Samsung Modes (ringer mode, volumes) changed when the earbuds disconnected and are not ours to rewrite; reconnect the device and check the ringer mode")
+    # Only when a key really was unset, not merely because the spec declares a default.
+    was_unset = [k for k in spec.treat_unset_as if k not in s2]
+    if was_unset:
+        notes.append(f"{', '.join(was_unset)} was unset before; restored to its documented default, so it now exists as an explicit value")
+    if notes:
+        r["note"] = " | ".join(notes)   # appended, never overwritten: the Bluetooth warning must survive
     return r
 
 
@@ -210,7 +218,8 @@ def main() -> int:
     merged = {r["id"]: r for r in (json.loads(path.read_text()) if path.exists() else [])}
     merged.update({r["id"]: r for r in results})          # keep earlier runs; latest result per id wins
     path.write_text(json.dumps(list(merged.values()), indent=2, default=str))
-    return 0 if all(r["verdict"] in ("PASS", "PASS-CAVEAT", "NO-EFFECT", "SKIP") for r in results) else 2
+    accepted = ("PASS", "PASS-CAVEAT", "NO-EFFECT", "SKIP", "XFAIL")
+    return 0 if all(r["verdict"] in accepted for r in results) else 2
 
 
 if __name__ == "__main__":
